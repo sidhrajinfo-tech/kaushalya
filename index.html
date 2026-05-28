@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaushalya Academy | ECE Excellence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #4f46e5;
+      --dark: #0f172a;
+      --white: #ffffff;
+      --accent: #10b981;
+      --muted: #64748b;
+      --danger: #ef4444;
+      --soft: #f8fafc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
+    }
+
+    .hidden { display: none !important; }
+
+    #msg {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5000;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--danger);
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      display: none;
+      max-width: min(92vw, 700px);
+      text-align: center;
+    }
+
+    .loaderOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loaderBox {
+      background: #fff;
+      border-radius: 22px;
+      padding: 28px;
+      min-width: 250px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    .loader {
+      width: 56px;
+      height: 56px;
+      border: 6px solid #e2e8f0;
+      border-top: 6px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 14px;
+    }
+
+    #loaderText {
+      color: #334155;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    #step1,
+    #googleLogin {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 430px;
+      background: rgb(202, 224, 236);
+      padding: 38px 28px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(26,24,24,0.10);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .auth-box h2 {
+      color: #0f172a;
+      margin-bottom: 8px;
+      font-size: 1.6rem;
+    }
+
+    .auth-box input,
+    .auth-box button {
+      padding: 13px;
+      width: 100%;
+      max-width: 310px;
+      border: none;
+      border-radius: 11px;
+      font-size: 16px;
+    }
+
+    .auth-box input {
+      outline: 2px solid transparent;
+    }
+
+    .auth-box input:focus {
+      outline-color: #60a5fa;
+    }
+
+    .auth-box button {
+      background: #57bde6;
+      color: #07111f;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .auth-box button:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.98);
+    }
+
+    .small-note {
+      font-size: 0.82rem;
+      color: #334155;
+      line-height: 1.4;
+      margin-top: 5px;
+    }
+
+    #mainContent {
+      width: 100%;
+      min-height: 100vh;
+      display: none;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: var(--dark);
+      color: white;
+      transition: 0.3s;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar-header {
+      padding: 30px 20px;
+      text-align: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .sidebar-header h2 {
+      color: #818cf8;
+      font-size: 1.55rem;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-header p {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 5px;
+    }
+
+    .topic-list {
+      padding: 15px;
+      list-style: none;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .topic-item {
+      padding: 13px 15px;
+      margin-bottom: 9px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      background: #1e293b;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 1px solid transparent;
+      line-height: 1.25;
+    }
+
+    .topic-item:hover,
+    .topic-item.active {
+      background: var(--primary);
+      border-color: #60a5fa;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .top-nav {
+      background: var(--white);
+      padding: 15px 20px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+    }
+
+    .menu-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 9px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .content {
+      flex: 1;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .quiz-card {
+      background: var(--white);
+      width: 100%;
+      max-width: 690px;
+      border-radius: 24px;
+      padding: 35px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+      border: 1px solid #f1f5f9;
+    }
+
+    .quiz-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    #q-counter {
+      color: #64748b;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .jump-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 7px 11px;
+      border-radius: 12px;
+    }
+
+    .jump-container span {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .jump-input {
+      width: 58px;
+      padding: 7px 5px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      text-align: center;
+      font-weight: 800;
+      outline: none;
+    }
+
+    .jump-btn {
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .score {
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .question-text {
+      font-size: 1.22rem;
+      font-weight: 800;
+      margin-bottom: 25px;
+      line-height: 1.6;
+      color: #1e293b;
+      white-space: pre-wrap;
+    }
+
+    .option-btn {
+      display: block;
+      width: 100%;
+      padding: 17px 18px;
+      margin-bottom: 12px;
+      border: 2px solid #f1f5f9;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: left;
+      background: white;
+      transition: 0.2s;
+      color: #0f172a;
+      line-height: 1.4;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .option-btn:disabled {
+      cursor: not-allowed;
+    }
+
+    .correct {
+      background-color: #ecfdf5 !important;
+      border-color: #10b981 !important;
+      color: #064e3b;
+    }
+
+    .wrong {
+      background-color: #fef2f2 !important;
+      border-color: #ef4444 !important;
+      color: #7f1d1d;
+    }
+
+    .explanation {
+      margin-top: 25px;
+      padding: 20px;
+      background: #f8fafc;
+      border-left: 5px solid var(--accent);
+      border-radius: 12px;
+      display: none;
+      line-height: 1.55;
+    }
+
+    .explanation strong {
+      color: var(--accent);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 32px;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 800;
+      cursor: pointer;
+      flex: 1;
+      transition: 0.2s;
+      font-size: 0.98rem;
+    }
+
+    .prev-btn {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .prev-btn:hover:not(:disabled) {
+      background: #e2e8f0;
+    }
+
+    .next-btn {
+      background: var(--primary);
+      color: white;
+    }
+
+    .next-btn:hover {
+      background: var(--secondary);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .footer-info {
+      text-align: center;
+      margin-top: 28px;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 20px;
+    }
+
+    .credit-line {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .login-line {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .logout-link {
+      color: var(--primary);
+      cursor: pointer;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .sidebar-overlay {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      #mainContent {
+        display: none;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: -300px;
+        height: 100%;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .top-nav {
+        display: flex;
+      }
+
+      .content {
+        padding: 20px;
+        align-items: flex-start;
+      }
+
+      .quiz-card {
+        padding: 20px;
+        border-radius: 20px;
+        margin-top: 10px;
+      }
+
+      .question-text {
+        font-size: 1rem;
+      }
+
+      .quiz-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .jump-container {
+        justify-content: flex-end;
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+      }
+
+      .sidebar-overlay.active {
+        display: block;
+      }
+
+      .nav-buttons {
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 13px 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <p id="msg"></p>
+
+  <div class="loaderOverlay" id="loaderOverlay">
+    <div class="loaderBox">
+      <div class="loader"></div>
+      <div id="loaderText">Loading...</div>
+    </div>
+  </div>
+
+  <div id="step1">
+    <div class="auth-box">
+      <h2>Enter Email</h2>
+      <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+      <button id="continueBtn" type="button">Continue</button>
+      <div class="small-note">Buy Subscription ₹49/- only<br>Whatsapp: 8734082986</div>
+    </div>
+  </div>
+
+  <div id="googleLogin" class="hidden">
+    <div class="auth-box">
+      <h2>Email Verified</h2>
+      <div class="small-note" id="verifiedEmailText"></div>
+      <button id="googleBtn" type="button">Continue with Google</button>
+      <button id="backBtn" type="button" style="background:#e2e8f0;">Change Email</button>
+    </div>
+  </div>
+
+  <div id="mainContent">
+    <div class="sidebar-overlay" id="overlay"></div>
+
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Kaushalya Academy</h2>
+        <p>Professional Learning</p>
+      </div>
+      <ul class="topic-list" id="topicList">
+        <li class="topic-item">Loading subjects...</li>
+      </ul>
+    </div>
+
+    <div class="main-container">
+      <div class="top-nav">
+        <button class="menu-btn" id="menuBtn" type="button">☰ Subjects</button>
+        <div style="font-weight: 900; color: var(--primary);">Kaushalya Academy</div>
+      </div>
+
+      <div class="content">
+        <div class="quiz-card">
+          <div class="quiz-head">
+            <div id="q-counter">Question</div>
+            <div class="jump-container">
+              <span>Go to:</span>
+              <input type="number" id="jump-input" class="jump-input" placeholder="#">
+              <button class="jump-btn" id="jumpBtn" type="button">Go</button>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <span id="topic-display">Subject</span>
+            <span class="score">Score: <span id="score">0</span></span>
+          </div>
+
+          <div class="question-text" id="question">Select a subject to start.</div>
+          <div id="options-container"></div>
+
+          <div class="explanation" id="explanation">
+            <strong>💡 Explanation:</strong>
+            <p id="exp-text"></p>
+          </div>
+
+          <div class="nav-buttons">
+            <button class="btn prev-btn" id="prev-btn" type="button">← Previous</button>
+            <button class="btn next-btn" id="next-btn" type="button">Next →</button>
+          </div>
+
+          <div class="footer-info">
+            <div class="credit-line">MADE BY - SIDHARAJSINH SOLANKI</div>
+            <div class="login-line">
+              Logged in: <span id="loggedEmail"></span> · <a class="logout-link" id="logoutLink">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* 
+  IMPORTANT:
+  Paste your Apps Script Web App URL below.
+  Keep only /exec. Do NOT add ?action=topics here.
+*/
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweUyvtO0SoRy2SLOdYQ1gzxAHVCRmMvWcxJfS8XzaYBCT-9aR1mRahTUoqzCyz2Xx3AQ/exec";
+
+/* Firebase web config from your old login.html */
+const firebaseConfig = {
+  apiKey: "AIzaSyCbv7jHzke9919mRl8v6yL-DxbqondnMEQ",
+  authDomain: "userlogin-dadac.firebaseapp.com",
+  projectId: "userlogin-dadac",
+  storageBucket: "userlogin-dadac.firebasestorage.app",
+  messagingSenderId: "897952738582",
+  appId: "1:897952738582:web:5b0a88ecbbd79400dd3437",
+  measurementId: "G-HCZVN71E5R"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const state = {
+  verifiedEmail: "",
+  userEmail: "",
+  idToken: "",
+  topics: [],
+  topicCache: {},
+  currentTopicKey: "",
+  currentQuestions: [],
+  currentIndex: 0,
+  answered: {},
+  scoreByTopic: {}
+};
+
+const $ = (id) => document.getElementById(id);
+
+function showMsg(text, isError = true) {
+  const msg = $("msg");
+  msg.textContent = text || "";
+  msg.style.color = isError ? "#ef4444" : "#10b981";
+  msg.style.display = text ? "block" : "none";
+  if (text) {
+    setTimeout(() => {
+      if (msg.textContent === text) msg.style.display = "none";
+    }, 5000);
+  }
+}
+
+function showLoader(text) {
+  $("loaderText").textContent = text || "Loading...";
+  $("loaderOverlay").style.display = "flex";
+}
+
+function hideLoader() {
+  $("loaderOverlay").style.display = "none";
+}
+
+function cleanBaseUrl(url) {
+  return String(url || "").trim().replace(/\?+.*$/, "").replace(/\/$/, "");
+}
+
+/*
+  JSONP avoids GitHub Pages → Apps Script CORS/fetch problems.
+  Your Code.gs must support callback parameter.
+*/
+function callApi(params) {
+  return new Promise((resolve, reject) => {
+    const base = cleanBaseUrl(APPS_SCRIPT_URL);
+
+    if (!base || base.includes("PASTE_YOUR_APPS_SCRIPT")) {
+      reject(new Error("Apps Script URL missing in index.html"));
+      return;
+    }
+
+    const callbackName = "__kaushalya_cb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+
+    const query = new URLSearchParams({
+      ...params,
+      callback: callbackName,
+      _t: Date.now()
+    });
+
+    const script = document.createElement("script");
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error("Cannot connect to Apps Script. Check Web App URL or deployment."));
+    }, 20000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Cannot connect to Apps Script. Check Web App URL."));
+    };
+
+    script.src = base + "?" + query.toString();
+    document.body.appendChild(script);
+  });
+}
+
+function showStep(step) {
+  $("step1").classList.add("hidden");
+  $("googleLogin").classList.add("hidden");
+  $("mainContent").style.display = "none";
+
+  if (step === "email") $("step1").classList.remove("hidden");
+  if (step === "google") $("googleLogin").classList.remove("hidden");
+  if (step === "main") $("mainContent").style.display = "flex";
+}
+
+async function checkEmail() {
+  const email = $("email").value.trim().toLowerCase();
+
+  if (!email) {
+    showMsg("Please enter email");
+    return;
+  }
+
+  try {
+    showLoader("Checking email...");
+    const data = await callApi({ action: "checkEmail", email });
+
+    if (!data.success || !data.allowed) {
+      showMsg(data.error || "Email Not Allowed");
+      return;
+    }
+
+    state.verifiedEmail = email;
+    localStorage.setItem("kaushalya_verified_email", email);
+    $("verifiedEmailText").textContent = "Verified email: " + email;
+
+    showMsg("Email verified", false);
+    showStep("google");
+  } catch (err) {
+    console.error(err);
+    showMsg(err.message || "Cannot connect to Apps Script. Check Web App URL.");
+  } finally {
+    hideLoader();
+  }
+}
+
+async function googleLogin() {
+  try {
+    showLoader("Opening Google login...");
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    const userEmail = String(user.email || "").trim().toLowerCase();
+    const expectedEmail = String(state.verifiedEmail || localStorage.getItem("kaushalya_verified_email") || "").trim().toLowerCase();
+
+    if (!expectedEmail) {
+      showMsg("Please verify email first.");
+      await firebase.auth().signOut();
+      showStep("email");
+      return;
+    }
+
+    if (userEmail !== expectedEmail) {
+      showMsg("Wrong Google Account. Login with: " + expectedEmail);
+      await firebase.auth().signOut();
+      showStep("google");
+      return;
+    }
+
+    const idToken = await user.getIdToken(true);
+
+    showLoader("Verifying Gmail...");
+    const verify = await callApi({
+      action: "verifyLogin",
+      expectedEmail,
+      idToken
+    });
+
+    if (!verify.success) {
+      showMsg(verify.error || "Login verification failed.");
+      await firebase.auth().signOut();
+      showStep("email");
+      return;
+    }
+
+    state.userEmail = userEmail;
+    state.idToken = idToken;
+    $("loggedEmail").textContent = userEmail;
+
+    localStorage.setItem("kaushalya_logged_email", userEmail);
+
+    showStep("main");
+    await loadTopics();
+  } catch (err) {
+    console.error(err);
+    showMsg(err.message || "Google login failed.");
+  } finally {
+    hideLoader();
+  }
+}
+
+async function loadTopics() {
+  try {
+    showLoader("Loading subjects...");
+    const data = await callApi({ action: "topics" });
+
+    if (!data.success) {
+      throw new Error(data.error || "Could not load subjects");
+    }
+
+    state.topics = data.topics || data.subjects || [];
+    renderTopics();
+
+    if (state.topics.length > 0) {
+      await selectTopic(state.topics[0].key);
+    } else {
+      $("question").textContent = "No subjects found. Check Questions sheet headers.";
+    }
+  } catch (err) {
+    console.error(err);
+    showMsg(err.message || "Cannot connect to Apps Script. Check Web App URL.");
+  } finally {
+    hideLoader();
+  }
+}
+
+function renderTopics() {
+  const list = $("topicList");
+  list.innerHTML = "";
+
+  state.topics.forEach((topic, index) => {
+    const li = document.createElement("li");
+    li.className = "topic-item";
+    li.dataset.key = topic.key;
+    li.textContent = `${index + 1}. ${topic.name} (${topic.count})`;
+    li.onclick = () => selectTopic(topic.key);
+    list.appendChild(li);
+  });
+}
+
+async function selectTopic(topicKey) {
+  try {
+    state.currentTopicKey = topicKey;
+    state.currentIndex = 0;
+
+    document.querySelectorAll(".topic-item").forEach(item => {
+      item.classList.toggle("active", item.dataset.key === topicKey);
+    });
+
+    if (window.innerWidth <= 900) {
+      $("sidebar").classList.remove("open");
+      $("overlay").classList.remove("active");
+    }
+
+    if (!state.topicCache[topicKey]) {
+      const topic = state.topics.find(t => t.key === topicKey);
+      showLoader("Loading " + (topic ? topic.name : "questions") + "...");
+
+      const data = await callApi({
+        action: "topicFull",
+        topic: topicKey,
+        idToken: state.idToken,
+        email: state.userEmail
+      });
+
+      if (!data.success) {
+        throw new Error(data.error || "Could not load questions");
+      }
+
+      state.topicCache[topicKey] = data.questions || [];
+      state.scoreByTopic[topicKey] = state.scoreByTopic[topicKey] || 0;
+      state.answered[topicKey] = state.answered[topicKey] || {};
+    }
+
+    state.currentQuestions = state.topicCache[topicKey];
+    renderQuestion();
+  } catch (err) {
+    console.error(err);
+    showMsg(err.message || "Could not load topic.");
+  } finally {
+    hideLoader();
+  }
+}
+
+function renderQuestion() {
+  const questions = state.currentQuestions || [];
+  const q = questions[state.currentIndex];
+
+  $("score").textContent = state.scoreByTopic[state.currentTopicKey] || 0;
+
+  if (!q) {
+    $("q-counter").textContent = "Question";
+    $("topic-display").textContent = "Subject";
+    $("question").textContent = "No questions found for this subject.";
+    $("options-container").innerHTML = "";
+    $("explanation").style.display = "none";
+    return;
+  }
+
+  $("q-counter").textContent = `Question ${state.currentIndex + 1}/${questions.length}`;
+  $("topic-display").textContent = `Subject: ${q.subject_name || state.currentTopicKey}`;
+  $("question").textContent = q.question_text || q.q || "";
+  $("options-container").innerHTML = "";
+  $("explanation").style.display = "none";
+  $("exp-text").textContent = "";
+
+  const answerState = state.answered[state.currentTopicKey]?.[state.currentIndex];
+
+  (q.options || []).forEach((optionText, index) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = optionText || `Option ${index + 1}`;
+    btn.onclick = () => selectAnswer(index);
+
+    if (answerState) {
+      btn.disabled = true;
+
+      if (index === Number(q.correct_index ?? q.correct)) {
+        btn.classList.add("correct");
+      }
+
+      if (index === answerState.selected && !answerState.correct) {
+        btn.classList.add("wrong");
+      }
+    }
+
+    $("options-container").appendChild(btn);
+  });
+
+  if (answerState) {
+    showExplanation(q);
+  }
+
+  $("prev-btn").disabled = state.currentIndex === 0;
+  $("next-btn").textContent = state.currentIndex === questions.length - 1 ? "Finish" : "Next →";
+}
+
+function selectAnswer(selectedIndex) {
+  const q = state.currentQuestions[state.currentIndex];
+  if (!q) return;
+
+  state.answered[state.currentTopicKey] = state.answered[state.currentTopicKey] || {};
+
+  if (state.answered[state.currentTopicKey][state.currentIndex]) {
+    return;
+  }
+
+  const correctIndex = Number(q.correct_index ?? q.correct);
+  const isCorrect = selectedIndex === correctIndex;
+
+  state.answered[state.currentTopicKey][state.currentIndex] = {
+    selected: selectedIndex,
+    correct: isCorrect
+  };
+
+  if (isCorrect) {
+    state.scoreByTopic[state.currentTopicKey] = (state.scoreByTopic[state.currentTopicKey] || 0) + 1;
+  }
+
+  renderQuestion();
+}
+
+function showExplanation(q) {
+  $("exp-text").textContent = q.explanation || q.exp || "No explanation available.";
+  $("explanation").style.display = "block";
+}
+
+function nextQuestion() {
+  if (state.currentIndex < state.currentQuestions.length - 1) {
+    state.currentIndex++;
+    renderQuestion();
+  } else {
+    showMsg(`Subject completed. Score: ${state.scoreByTopic[state.currentTopicKey] || 0}/${state.currentQuestions.length}`, false);
+  }
+}
+
+function prevQuestion() {
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    renderQuestion();
+  }
+}
+
+function jumpToQuestion() {
+  const n = Number($("jump-input").value);
+  const total = state.currentQuestions.length;
+
+  if (!Number.isInteger(n) || n < 1 || n > total) {
+    showMsg(`Enter a number between 1 and ${total}`);
+    return;
+  }
+
+  state.currentIndex = n - 1;
+  $("jump-input").value = "";
+  renderQuestion();
+}
+
+function toggleMenu() {
+  $("sidebar").classList.toggle("open");
+  $("overlay").classList.toggle("active");
+}
+
+async function logout() {
+  try { await firebase.auth().signOut(); } catch (e) {}
+  localStorage.removeItem("kaushalya_verified_email");
+  localStorage.removeItem("kaushalya_logged_email");
+  location.reload();
+}
+
+$("continueBtn").onclick = checkEmail;
+$("googleBtn").onclick = googleLogin;
+$("backBtn").onclick = () => showStep("email");
+$("menuBtn").onclick = toggleMenu;
+$("overlay").onclick = toggleMenu;
+$("next-btn").onclick = nextQuestion;
+$("prev-btn").onclick = prevQuestion;
+$("jumpBtn").onclick = jumpToQuestion;
+$("logoutLink").onclick = logout;
+
+showStep("email");
+</script>
+</body>
+</html>
