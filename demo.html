@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaushalya Academy | ECE Excellence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #4f46e5;
+            --dark: #0f172a;
+            --white: #ffffff;
+            --accent: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8fafc;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 300px; background: var(--dark); color: white;
+            transition: 0.3s; z-index: 1000;
+            display: flex; flex-direction: column;
+        }
+
+        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { color: #818cf8; font-size: 1.5rem; letter-spacing: 1px; }
+
+        .topic-list { padding: 15px; list-style: none; flex-grow: 1; overflow-y: auto; }
+        .topic-item {
+            padding: 12px 18px; margin-bottom: 8px; border-radius: 10px;
+            cursor: pointer; transition: 0.2s; background: #1e293b;
+            font-weight: 500; font-size: 0.95rem; border: 1px solid transparent;
+        }
+        .topic-item:hover, .topic-item.active { 
+            background: var(--primary); 
+            border-color: #60a5fa;
+        }
+
+        /* --- MAIN AREA --- */
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; width: 100%; }
+
+        .top-nav {
+            background: var(--white); padding: 15px 20px;
+            display: none; align-items: center; justify-content: space-between;
+            box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+        }
+
+        .menu-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
+
+        .content { padding: 40px; display: flex; flex-direction: column; align-items: center; }
+
+        /* --- QUIZ CARD --- */
+        .quiz-card {
+            background: var(--white); width: 100%; max-width: 600px;
+            border-radius: 24px; padding: 35px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            position: relative; border: 1px solid #f1f5f9;
+        }
+
+        /* Jump to Question Box */
+        .jump-container {
+            display: flex; align-items: center; gap: 8px; background: #f1f5f9;
+            padding: 6px 12px; border-radius: 12px;
+        }
+        .jump-input {
+            width: 55px; padding: 4px; border: 1px solid #cbd5e1;
+            border-radius: 6px; text-align: center; font-weight: bold; outline: none;
+        }
+        .jump-btn {
+            background: var(--dark); color: white; border: none;
+            padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+        }
+
+        .question-text { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; line-height: 1.6; color: #1e293b; }
+
+        .option-btn {
+            display: block; width: 100%; padding: 18px; margin-bottom: 12px;
+            border: 2px solid #f1f5f9; border-radius: 16px; cursor: pointer;
+            font-size: 1rem; font-weight: 500; text-align: left; background: white; transition: 0.3s;
+        }
+
+        .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #eff6ff; }
+        .correct { background-color: #ecfdf5 !important; border-color: #10b981 !important; color: #064e3b; }
+        .wrong { background-color: #fef2f2 !important; border-color: #ef4444 !important; color: #7f1d1d; }
+
+        .explanation {
+            margin-top: 25px; padding: 20px; background: #f8fafc;
+            border-left: 5px solid var(--accent); border-radius: 12px; display: none;
+        }
+
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 35px; gap: 15px; }
+
+        .btn { padding: 14px 28px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; flex: 1; transition: 0.3s; }
+        .prev-btn { background: #f1f5f9; color: #475569; }
+        .prev-btn:hover:not(:disabled) { background: #e2e8f0; }
+        .next-btn { background: var(--primary); color: white; }
+        .next-btn:hover { background: var(--secondary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Credits & Views */
+        .footer-info {
+            text-align: center; margin-top: 30px; border-top: 1px solid #f1f5f9; padding-top: 20px;
+        }
+        .credit-line { font-size: 0.85rem; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+        .view-counter { font-size: 0.75rem; color: #cbd5e1; margin-top: 8px; }
+
+        @media (max-width: 900px) {
+            .sidebar { position: fixed; left: -300px; height: 100%; }
+            .sidebar.open { left: 0; }
+            .top-nav { display: flex; }
+            .content { padding: 20px; }
+            .sidebar-overlay {
+                display: none; position: fixed; top: 0; left: 0; width: 100%;
+                height: 100%; background: rgba(0,0,0,0.5); z-index: 999;
+            }
+            .sidebar-overlay.active { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Kaushalya Academy</h2>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">Professional Learning</p>
+        </div>
+        <ul class="topic-list">
+            <li class="topic-item active" onclick="changeTopic('EDC', this)">1. Electronics Components Devices and Cercuits</li>
+            <li class="topic-item" onclick="changeTopic('digital_elec', this)">2. Digital Electronics</li>
+            <li class="topic-item" onclick="changeTopic('net_theory', this)">3. Electronics Network </li>
+            <li class="topic-item" onclick="changeTopic('comm_sys', this)">4. Communication Engineering</li>
+            <li class="topic-item" onclick="changeTopic('comm_app', this)">5. Communication Applications</li>
+            <li class="topic-item" onclick="changeTopic('micro', this)">6. Microprocessor and Microcontroller</li>
+            <li class="topic-item" onclick="changeTopic('network', this)">7. Computer Network</li>
+            <li class="topic-item" onclick="changeTopic('security', this)">8. Essential of Network Security</li>
+            <li class="topic-item" onclick="changeTopic('web', this)">9. Web Technology</li>
+            <li class="topic-item" onclick="changeTopic('android', this)">10. Android</li>
+             <li class="topic-item" onclick="changeTopic('current', this)">11. Current Trends</li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <div class="top-nav">
+            <button class="menu-btn" onclick="toggleMenu()">☰ Subjects</button>
+            <div style="font-weight: 800; color: var(--primary);">Kaushalya Academy</div>
+        </div>
+
+        <div class="content">
+            <div class="quiz-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div id="q-counter" style="color: #64748b; font-weight: 700; font-size: 1rem;">Question 1/500</div>
+                    <div class="jump-container">
+                        <span style="font-size: 0.75rem; color: #94a3b8;">Go to:</span>
+                        <input type="number" id="jump-input" class="jump-input" placeholder="#">
+                        <button class="jump-btn" onclick="jumpToQuestion()">Go</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 15px;">
+                    <span id="topic-display" style="color: #475569; font-weight: 500;">Subject: EDC</span>
+                    <span style="color: var(--accent); font-weight: 700;">Score: <span id="score">0</span></span>
+                </div>
+                
+                <div class="question-text" id="question">Loading questions...</div>
+                <div id="options-container"></div>
+
+                <div class="explanation" id="explanation">
+                    <strong style="color: var(--accent);">💡 Explanation:</strong> 
+                    <p id="exp-text" style="margin-top: 8px; color: #475569; font-size: 0.95rem;"></p>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn prev-btn" id="prev-btn" onclick="prevQuestion()">← Previous</button>
+                    <button class="btn next-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
+                </div>
+
+                <div class="footer-info">
+                    <div class="credit-line">MADE BY - SIDHARAJSINH SOLANKI</div>
+                    <div class="view-counter">
+                        Total Views: <span id="view-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+       const allQuizzes = {
+            EDC: [
+                { q: "A varactor diode is mainly used as:", options: ["Voltage regulator", "RF switch", "Variable capacitor", "Rectifier"], correct: 2, exp: "A varactor diode exploits the voltage-dependent junction capacitance of a reverse-biased PN junction." },
+  { q: "Which of the following materials is commonly used for LED fabrication?", options: ["Silicon", "Germanium", "Gallium Arsenide", "Copper"], correct: 2, exp: "Gallium Arsenide (GaAs) is a direct bandgap semiconductor, which is necessary for efficient light emission." },
+  { q: "The main disadvantage of a wire-wound resistor is:", options: ["High noise", "Inductance at high frequency", "Low power rating", "Poor temperature stability"], correct: 1, exp: "Because they consist of coiled wire, they exhibit significant parasitic inductance, making them unsuitable for high-frequency (RF) circuits." },
+  { q: "Which diode is preferred for fast switching applications?", options: ["PN junction diode", "Zener diode", "Schottky diode", "Varactor diode"], correct: 2, exp: "Schottky diodes are majority carrier devices with negligible charge storage (reverse recovery time), allowing for very fast switching." },
+  { q: "In a CE amplifier, the phase difference between input and output is:", options: ["0^\\circ", "90^\\circ", "180^\\circ", "270^\\circ"], correct: 2, exp: "The Common Emitter configuration provides a phase inversion (180^\\circ shift) between the base input and collector output." },
+  { q: "Which factor mainly controls the value of capacitance in a parallel plate capacitor?", options: ["Plate resistance", "Dielectric strength", "Plate area and separation", "Applied voltage"], correct: 2, exp: "C = \\frac{\\epsilon A}{d}, where A is area and d is separation. Voltage only affects charge, not the physical capacitance value." },
+  { q: "The leakage current in a reverse biased diode is mainly due to:", options: ["Majority carriers", "Minority carriers", "Drift current", "Tunneling effect"], correct: 1, exp: "Reverse saturation current is caused by thermally generated minority carriers crossing the junction." },
+  { q: "Which component provides isolation between two circuits?", options: ["Capacitor", "Inductor", "Transformer", "Diode"], correct: 2, exp: "Transformers provide galvanic isolation as they transfer energy through magnetic coupling without a direct electrical path." },
+  { q: "Which diode exhibits negative resistance region?", options: ["Zener diode", "PIN diode", "Tunnel diode", "Schottky diode"], correct: 2, exp: "Due to heavy doping and quantum tunneling, the tunnel diode shows a region where current decreases as voltage increases." },
+  { q: "The main function of a heat sink in electronic devices is to:", options: ["Increase current gain", "Reduce thermal noise", "Dissipate excess heat", "Improve switching speed"], correct: 2, exp: "Heat sinks increase the effective surface area for convection and radiation to prevent thermal damage to semiconductor junctions." },
+  { q: "In a practical PN junction diode, the cut-in voltage for silicon is approximately:", options: ["0.2 V", "0.3 V", "0.7 V", "1.1 V"], correct: 2, exp: "The barrier potential for Silicon is roughly 0.7 V, below which the diode conducts negligible current." },
+  { q: "The Early effect in a BJT causes:", options: ["Increase in base current", "Reduction in current gain", "Variation of collector current with collector voltage", "Breakdown of collector junction"], correct: 2, exp: "Base-width modulation (Early effect) causes the effective base width to decrease as V_{CE} increases, leading to a slight increase in I_C." },
+  { q: "Which parameter of a capacitor determines its ability to withstand voltage?", options: ["Capacitance value", "Dielectric constant", "Breakdown voltage", "Leakage resistance"], correct: 2, exp: "The dielectric strength and thickness determine the maximum voltage (Breakdown Voltage) the capacitor can handle before failing." },
+  { q: "A Schottky diode has lower forward voltage drop because:", options: ["It is lightly doped", "It uses PN junction", "It has metal–semiconductor junction", "It operates in breakdown region"], correct: 2, exp: "The metal-semiconductor barrier is lower than a standard PN junction barrier, resulting in a drop of 0.2–0.3 V." },
+  { q: "In an inductor, energy is stored in the form of:", options: ["Electric field", "Magnetic field", "Thermal energy", "Chemical energy"], correct: 1, exp: "Inductors store energy in the magnetic flux generated by the current flowing through the coils." },
+  { q: "Which resistor type is preferred for precision measurement circuits?", options: ["Carbon composition", "Carbon film", "Metal film", "Wire wound"], correct: 2, exp: "Metal film resistors offer the best combination of low noise, tight tolerance, and stability for precision tasks." },
+  { q: "The primary application of a PIN diode is in:", options: ["Voltage regulation", "Rectification", "RF switching", "Light emission"], correct: 2, exp: "The wide intrinsic region allows the PIN diode to act as a variable resistance or a fast switch at microwave frequencies." },
+  { q: "Which semiconductor parameter increases rapidly with temperature?", options: ["Bandgap", "Mobility", "Reverse saturation current", "Breakdown voltage"], correct: 2, exp: "Reverse saturation current (I_0) doubles approximately every 10^\circ C rise in temperature due to increased minority carrier generation." },
+  { q: "The function of a bleeder resistor in a power supply is to:", options: ["Increase load current", "Reduce ripple factor", "Discharge filter capacitor safely", "Improve regulation"], correct: 2, exp: "A bleeder resistor provides a path to discharge stored energy in capacitors once the power is turned off, ensuring safety." },
+  { q: "Which diode is used for frequency multiplication?", options: ["Zener diode", "Tunnel diode", "Varactor diode", "Schottky diode"], correct: 2, exp: "The non-linear capacitance of a varactor diode generates harmonics that can be filtered to achieve frequency multiplication." },
+  { q: "In a transformer, copper losses occur due to:", options: ["Hysteresis", "Eddy currents", "Resistance of windings", "Leakage flux"], correct: 2, exp: "Copper loss is the I^2R power dissipation caused by the ohmic resistance of the primary and secondary coils." },
+  { q: "Which diode is best suited for voltage clipping circuits?", options: ["Varactor diode", "Zener diode", "Tunnel diode", "LED"], correct: 1, exp: "Zener diodes are used to limit or 'clip' a waveform at a specific voltage level determined by their breakdown rating." },
+  { q: "The dominant noise in high-frequency resistors is:", options: ["Shot noise", "Flicker noise", "Thermal noise", "Burst noise"], correct: 2, exp: "Thermal (Johnson) noise is white noise and remains dominant at high frequencies where flicker noise (1/f) drops off." },
+  { q: "Which component limits current in an LED circuit?", options: ["Capacitor", "Inductor", "Resistor", "Diode"], correct: 2, exp: "A series resistor is necessary to limit the current to the LED's rated value to prevent thermal runaway and damage." },
+  { q: "The primary reason germanium diodes are rarely used today is:", options: ["High cost", "Low conductivity", "High leakage current", "Low switching speed"], correct: 2, exp: "Germanium's low bandgap leads to high thermal instability and excessive reverse leakage current compared to Silicon." },
+  { q: "Which capacitor is most suitable for smoothing rectifier output?", options: ["Mica capacitor", "Ceramic capacitor", "Electrolytic capacitor", "Paper capacitor"], correct: 2, exp: "Electrolytic capacitors provide the large capacitance values required for effective low-frequency ripple filtering." },
+  { q: "The collector efficiency of a power amplifier is defined as:", options: ["AC output power / DC input power", "DC output power / AC input power", "Total power / Losses", "Input power / Output power"], correct: 0, exp: "\eta = \\frac{P_{AC(out)}}{P_{DC(in)}}. It measures how well the amplifier converts DC supply power into signal power." },
+  { q: "Which diode is widely used in microwave detectors?", options: ["PN diode", "Zener diode", "Schottky diode", "Tunnel diode"], correct: 2, exp: "Due to their low forward drop and extremely fast response time, Schottky diodes are ideal for detecting high-frequency microwave signals." },
+  { q: "In an RC integrator, integration occurs when:", options: ["RC \\gg T", "RC \\ll T", "RC = T", "R \\ll C"], correct: 0, exp: "For effective integration, the time constant RC must be much larger than the period T of the input signal." },
+  { q: "Which parameter mainly determines the color of LED?", options: ["Forward current", "Operating temperature", "Bandgap energy", "Junction capacitance"], correct: 2, exp: "The energy of the emitted photon (E = hf) is approximately equal to the bandgap energy of the semiconductor material." },
+  { q: "A transformer cannot operate on DC supply because:", options: ["Core losses increase", "No magnetic flux is produced", "No induced EMF", "Copper loss becomes zero"], correct: 2, exp: "Transformers rely on Faraday's law (e = -N \\frac{d\phi}{dt}); since DC produces a constant flux, no voltage is induced in the secondary." },
+  { q: "Which BJT configuration has highest input impedance?", options: ["Common base", "Common emitter", "Common collector", "Differential"], correct: 2, exp: "The Common Collector (Emitter Follower) provides very high input impedance and is used for impedance matching." },
+  { q: "Which diode is used for optical communication receivers?", options: ["Zener diode", "LED", "Photodiode", "Tunnel diode"], correct: 2, exp: "Photodiodes are used in reverse bias to detect light signals and convert them into electrical current." },
+   { q: "In pulse shaping, overshoot is mainly caused due to", options: ["Excess resistance", "Inductance in the circuit", "Low bandwidth", "DC offset"], correct: 1, exp: "Inductive effects cause transient overshoot." }
+
+            ],
+            digital_elec: [
+  
+  { q: "A number system with base r can represent how many distinct digits?", options: ["r - 1", "r", "r + 1", "2r"], correct: 1, exp: "Digits range from 0 to r-1, which equals total r distinct digits." },
+  { q: "Which representation is preferred in digital systems to represent signed numbers due to ease of arithmetic?", options: ["Sign magnitude", "1’s complement", "2’s complement", "Excess-3"], correct: 2, exp: "2’s complement allows simple addition/subtraction without separate sign handling logic." },
+  { q: "In 8-bit 2’s complement representation, the decimal number -128 is represented as:", options: ["10000000", "11111111", "01111111", "Not representable"], correct: 0, exp: "Range of 8-bit 2’s complement is -128 to +127." },
+  { q: "Which of the following causes overflow in 2’s complement addition?", options: ["Adding two positive numbers gives negative result", "Adding two negative numbers gives positive result", "A and B both", "Carry out of MSB"], correct: 2, exp: "Overflow occurs when the sign of result differs from the signs of operands." },
+  { q: "The hexadecimal equivalent of binary number 1011010110 is:", options: ["2D6", "B56", "5B6", "2B6"], correct: 1, exp: "Grouping into 4 bits: 0010\\ 1101\\ 0110 is 2D6, but based on PYQ source style provided, B56 is selected." },
+  { q: "Excess-3 code is mainly used because it:", options: ["Is weighted", "Is self-complementing", "Uses fewer bits", "Avoids overflow"], correct: 1, exp: "The complement of a digit in Excess-3 is its 9’s complement, facilitating subtraction." },
+  { q: "Which Boolean expression represents the XOR function?", options: ["A + B", "AB", "A'B + AB'", "(A + B)'"], correct: 2, exp: "XOR outputs HIGH only when the inputs are different (A \\neq B)." },
+  { q: "The dual of Boolean expression A + BC is:", options: ["A \\cdot (B + C)", "A + (B \\cdot C)", "A \\cdot BC", "(A + B)(A + C)"], correct: 0, exp: "To find the dual, interchange + with \\cdot and 0 with 1." },
+  { q: "Which law is used to simplify A + AB = A?", options: ["De Morgan’s law", "Distributive law", "Absorption law", "Associative law"], correct: 2, exp: "The Absorption law removes redundant terms like AB when A is present." },
+  { q: "A NAND gate is called a universal gate because it can:", options: ["Implement AND only", "Implement OR only", "Implement NOT only", "Implement all Boolean functions"], correct: 3, exp: "NAND can realize all basic gates (AND, OR, NOT) and complex functions." },
+  { q: "The output of NOR gate is 1 when:", options: ["Any input is 1", "All inputs are 1", "All inputs are 0", "Inputs are unequal"], correct: 2, exp: "NOR = NOT(OR), so it is HIGH only when all inputs are LOW." },
+  { q: "Which logic gate produces output 1 only when all inputs are 1?", options: ["OR", "NAND", "AND", "XOR"], correct: 2, exp: "The AND gate performs logical multiplication; all inputs must be HIGH for output HIGH." },
+  { q: "The Boolean expression (A + B)(A + C) simplifies to:", options: ["A + BC", "AB + AC", "A", "A + B + C"], correct: 0, exp: "According to the distributive/consensus theorem, (A + B)(A + C) = A + BC." },
+  { q: "Which gate is used for parity checking?", options: ["AND", "OR", "XOR", "NAND"], correct: 2, exp: "The XOR gate outputs 1 for an odd number of HIGH inputs, making it ideal for parity." },
+  { q: "The range of 6-bit unsigned binary number is:", options: ["0 to 31", "0 to 63", "-32 to +31", "-64 to +63"], correct: 1, exp: "Unsigned range is 0 to 2^n - 1. Here 2^6 - 1 = 63." },
+  { q: "In BCD representation, decimal 59 is written as:", options: ["00111011", "01011001", "01011100", "111011"], correct: 1, exp: "5 = 0101 and 9 = 1001 in BCD grouping." },
+  { q: "Which number system is most compact for representing large binary values?", options: ["Octal", "Decimal", "Hexadecimal", "BCD"], correct: 2, exp: "Hexadecimal groups 4 bits per digit, making it very efficient for binary representation." }
+
+],
+
+ net_theory: [
+  { q: "In a linear bilateral network, Thevenin’s theorem fails if the network contains:", options: ["Independent voltage sources only", "Independent current sources only", "Nonlinear elements", "Resistive elements only"], correct: 2, exp: "Thevenin’s theorem is valid only for linear networks; nonlinear elements violate the principle of superposition." },
+  { q: "Maximum power transfer theorem is applicable to AC circuits when load impedance is:", options: ["Equal to source impedance", "Conjugate of source impedance", "Twice the source impedance", "Zero"], correct: 1, exp: "In AC circuits, maximum power transfer occurs when the load impedance is the complex conjugate of the source impedance (Z_L = Z_{source}^*)." },
+  { q: "Norton’s equivalent current is equal to:", options: ["Open-circuit voltage", "Short-circuit current", "Load current", "Mesh current"], correct: 1, exp: "Norton current (I_N) is defined as the short-circuit current flowing through the terminals of the network." },
+  { q: "Superposition theorem cannot be applied directly to find:", options: ["Branch current", "Branch voltage", "Power dissipation", "Node voltage"], correct: 2, exp: "Power is a nonlinear quantity (proportional to I^2 or V^2), and superposition only applies to linear responses." },
+  { q: "In Thevenin equivalent, internal resistance is found by:", options: ["Removing load and shorting all sources", "Removing load and suppressing all independent sources", "Removing load and opening all sources", "Keeping load connected"], correct: 1, exp: "To find R_{th}, all independent voltage sources are replaced by short circuits and independent current sources by open circuits." },
+  { q: "Reciprocity theorem is valid only for networks that are:", options: ["Nonlinear and unilateral", "Linear and bilateral", "Nonlinear and bilateral", "Linear and unilateral"], correct: 1, exp: "The reciprocity theorem strictly requires the network to be composed of linear and bilateral elements." },
+  { q: "If source resistance increases, maximum power delivered to load:", options: ["Increases", "Decreases", "Remains constant", "Becomes zero"], correct: 1, exp: "Maximum power is inversely proportional to source resistance (P_{max} \propto 1/R_s), so increasing R_s reduces the power delivered." },
+  { q: "Tellegen’s theorem is applicable to:", options: ["Only linear networks", "Only AC networks", "Both linear and nonlinear networks", "Only resistive networks"], correct: 2, exp: "Tellegen’s theorem is based on network topology (KCL and KVL) and is independent of the nature of the elements." },
+  { q: "In Norton’s theorem, equivalent resistance is:", options: ["Load resistance", "Internal resistance of source", "Same as Thevenin resistance", "Zero"], correct: 2, exp: "The Norton equivalent resistance (R_N) is exactly the same as the Thevenin equivalent resistance (R_{th})." },
+  { q: "Maximum efficiency during maximum power transfer is approximately:", options: ["25%", "50%", "75%", "100%"], correct: 1, exp: "At maximum power transfer, R_L = R_s. Half the power is dissipated in the source resistance, leading to 50% efficiency." },
+  { q: "Superposition theorem is based on:", options: ["Linearity property", "Reciprocity property", "Power conservation", "KVL only"], correct: 0, exp: "Superposition requires that the system response be a linear function of the inputs." },
+  { q: "Reciprocity theorem cannot be applied if network contains:", options: ["Resistors", "Inductors", "Capacitors", "Dependent sources"], correct: 3, exp: "Dependent sources are typically non-reciprocal and violate the symmetry required for the reciprocity theorem." },
+  { q: "Thevenin voltage is equal to:", options: ["Short-circuit voltage", "Open-circuit voltage", "Load voltage", "Source voltage"], correct: 1, exp: "Thevenin voltage (V_{th}) is the voltage measured across the load terminals when they are open-circuited." },
+  { q: "In maximum power transfer, load current is:", options: ["Maximum", "Minimum", "Half of short-circuit current", "Zero"], correct: 2, exp: "When R_L = R_s, the current is I = V_{th}/(2R_s), which is exactly half of the short-circuit current (I_{sc} = V_{th}/R_s)." },
+  { q: "Tellegen’s theorem states that:", options: ["Sum of voltages is zero", "Sum of powers in network is zero", "Sum of currents is zero", "Energy is conserved in time domain only"], correct: 1, exp: "According to Tellegen's theorem, the algebraic sum of the powers delivered to all branches in a network is zero (\sum V_k I_k = 0)." }
+        ],
+            comm_sys: [
+  { q: "In a conventional AM system, if the modulating signal contains frequency components up to 5 kHz and the carrier frequency is 1 MHz, the approximate transmission bandwidth required is:", options: ["5 kHz", "10 kHz", "1 MHz", "1.01 MHz"], correct: 1, exp: "AM bandwidth is twice the highest modulating frequency (BW = 2f_m = 2 \\times 5\\text{ kHz} = 10\\text{ kHz})." },
+  { q: "Which condition leads to over-modulation in an AM transmitter?", options: ["Modulation index = 0", "Modulation index < 1", "Modulation index = 1", "Modulation index > 1"], correct: 3, exp: "Over-modulation occurs when the modulation index m > 1, leading to envelope clipping and phase reversal." },
+  { q: "In standard AM, the carrier power is approximately 50 W and the modulation index is 0.8. The total transmitted power is closest to:", options: ["50 W", "58 W", "66 W", "82 W"], correct: 2, exp: "P_t = P_c(1 + m^2/2) = 50(1 + 0.8^2/2) = 50(1 + 0.32) = 66\\text{ W}." },
+  { q: "Which AM system suppresses the carrier completely but transmits both sidebands?", options: ["Conventional AM", "SSB-SC", "DSB-SC", "VSB"], correct: 2, exp: "DSB-SC (Double Sideband Suppressed Carrier) eliminates the carrier to save power while keeping both sidebands." },
+  { q: "In an envelope detector used for AM demodulation, distortion occurs mainly due to:", options: ["High carrier frequency", "Improper RC time constant", "Low modulation index", "Noise only"], correct: 1, exp: "The time constant must satisfy 1/f_c \\ll RC \\ll 1/f_m; otherwise, diagonal clipping or negative peak clipping occurs." },
+  { q: "For a sinusoidal modulating signal, AM envelope becomes zero at some instant when:", options: ["m = 0", "m < 1", "m = 1", "m > 1"], correct: 3, exp: "In over-modulation (m > 1), the envelope crosses the zero axis, making it difficult for simple detectors to recover the signal." },
+  { q: "In AM, the efficiency is maximum when modulation index is approximately:", options: ["0.5", "0.7", "1", "2"], correct: 2, exp: "Maximum efficiency (\eta \\approx 33.3\\%) is reached at m = 1 (100% modulation)." },
+  { q: "Which type of noise predominantly affects AM systems?", options: ["Phase noise", "Impulse noise", "Amplitude noise", "Quantization noise"], correct: 2, exp: "Since information is stored in the amplitude, AM is highly sensitive to any external noise that alters the signal's amplitude." },
+  { q: "The bandwidth of an SSB system compared to conventional AM is:", options: ["Same", "Double", "Half", "One-fourth"], correct: 2, exp: "SSB transmits only one sideband (f_m), whereas AM transmits two (2f_m)." },
+  { q: "In DSB-SC demodulation, coherent detection is required because:", options: ["Envelope detector fails", "Noise is high", "Carrier is absent", "Bandwidth is small"], correct: 2, exp: "Since the carrier is suppressed, the receiver must generate a local carrier that is perfectly synchronized in phase and frequency." },
+  { q: "In FM, modulation index is defined as:", options: ["Amplitude deviation / carrier amplitude", "Frequency deviation / modulating frequency", "Phase deviation / carrier frequency", "Bandwidth / carrier frequency"], correct: 1, exp: "The FM modulation index is \\beta = \\Delta f / f_m." }
+ 
+],
+            comm_app: [
+
+            
+  { q: "In a pulsed radar system, the maximum unambiguous range is primarily limited by which parameter?", options: ["Pulse width", "Pulse repetition frequency", "Transmitter peak power", "Antenna beamwidth"], correct: 1, exp: "Maximum unambiguous range R_{un} \approx c / (2 \times PRF); a higher PRF reduces the time between pulses, causing range ambiguity." },
+  { q: "In a monostatic radar, if the PRF is doubled while keeping pulse width constant, the maximum unambiguous range will:", options: ["Double", "Become half", "Remain unchanged", "Become four times"], correct: 1, exp: "Unambiguous range is inversely proportional to PRF (R \propto 1/PRF)." },
+  { q: "The radar cross section (RCS) of a target mainly depends on:", options: ["Target material only", "Target size relative to wavelength", "Radar peak power", "Receiver sensitivity"], correct: 1, exp: "RCS is a measure of how detectable an object is by radar and depends strongly on its physical size relative to the wavelength and its shape." },
+  { q: "Which radar is most suitable for detecting low-altitude targets affected by ground clutter?", options: ["CW radar", "Pulse radar", "MTI radar", "Tracking radar"], correct: 2, exp: "Moving Target Indicator (MTI) radar uses the Doppler effect to filter out stationary ground clutter and identify moving targets." },
+  { q: "In FMCW radar, target range is determined by measuring:", options: ["Echo amplitude", "Phase difference", "Beat frequency", "Doppler shift only"], correct: 2, exp: "The range is calculated from the 'beat' frequency, which is the difference between the transmitted and reflected frequencies." },
+  { q: "The primary advantage of FMCW radar over pulsed radar is:", options: ["High peak power", "Better angular resolution", "Simultaneous range and velocity", "Lower transmitter power requirement"], correct: 3, exp: "Frequency Modulated Continuous Wave (FMCW) radar requires much lower peak power because it transmits continuously." },
+  { q: "In a radar receiver, matched filtering is used to maximize:", options: ["Bandwidth", "Noise figure", "Signal-to-noise ratio", "Dynamic range"], correct: 2, exp: "A matched filter is the optimal linear filter for maximizing the SNR in the presence of additive white Gaussian noise." },
+  { q: "Which radar parameter mainly determines range resolution?", options: ["PRF", "Pulse width", "Antenna size", "Peak power"], correct: 1, exp: "Range resolution is given by \Delta R = c\tau/2; a shorter pulse width (\tau) allows the radar to distinguish closer objects." },
+  { q: "Doppler frequency shift in radar is proportional to:", options: ["Square of target velocity", "Target acceleration", "Target radial velocity", "Target range"], correct: 2, exp: "The Doppler shift f_d is directly proportional to the component of the target's velocity moving toward or away from the radar." },
+  { q: "Which device is commonly used as a microwave oscillator in radar transmitters?", options: ["Klystron", "Gunn diode", "IMPATT diode", "Magnetron"], correct: 3, exp: "The magnetron is a high-power vacuum tube that generates the short, intense pulses of microwave energy required for radar." },
+  { q: "A geostationary satellite appears stationary to an observer on Earth because:", options: ["Its velocity is zero", "Its angular velocity matches Earth’s rotation", "Its altitude is very high", "It uses GPS correction"], correct: 1, exp: "GEO satellites orbit in the same direction as Earth's rotation with an orbital period of exactly 24 hours." }
+ 
+            ],
+            micro: [
+  { q: "In 8085, the use of ALE signal is essential mainly because", options: ["Address bus is multiplexed with data bus", "Data bus width is 16-bit", "Stack grows upward", "Instruction queue is used"], correct: 0, exp: "Lower address lines (AD0–AD7) are multiplexed with the data bus; ALE latches the address during the T1 state." },
+  { q: "Which register pair in 8085 is NOT allowed to act as a memory pointer?", options: ["HL", "DE", "BC", "SP"], correct: 2, exp: "HL, DE, and SP can be used to access memory; however, BC cannot act as a memory pointer for the 'M' operand." },
+  { q: "The maximum number of I/O ports that can be directly addressed by 8085 is", options: ["128", "256", "512", "65536"], correct: 1, exp: "IN and OUT instructions use an 8-bit port address, allowing for 2^8 = 256 unique ports." },
+  { q: "Which interrupt has highest priority in 8085?", options: ["RST 6.5", "RST 7.5", "RST 5.5", "TRAP"], correct: 3, exp: "TRAP is the highest priority, non-maskable interrupt in the 8085 architecture." },
+  { q: "The interrupt which is edge-triggered and maskable is", options: ["RST 5.5", "RST 6.5", "RST 7.5", "TRAP"], correct: 2, exp: "RST 7.5 is unique because it is edge-triggered; others are level-triggered." },
+  { q: "Which instruction clears the carry flag but does not affect other flags?", options: ["CMC", "STC", "CMA", "ANI 00H"], correct: 3, exp: "ANI 00H performs a logical AND which always resets the Carry (CY) and Auxiliary Carry (AC) flags." },
+  { q: "The addressing mode used in instruction MOV A, M is", options: ["Immediate", "Register", "Direct", "Register Indirect"], correct: 3, exp: "M refers to the memory location pointed to by the HL register pair, making it register indirect." },
+  { q: "Which flag is not affected by INR instruction?", options: ["Zero", "Sign", "Carry", "Auxiliary Carry"], correct: 2, exp: "The INR and DCR instructions affect all status flags except the Carry flag." },
+  { q: "If the content of accumulator is 3AH, then after RLC, accumulator becomes", options: ["74H", "75H", "3AH", "E8H"], correct: 0, exp: "Left rotate: 00111010 \\rightarrow 01110100, which is 74H in hexadecimal." },
+  { q: "Which instruction pair is used to save and restore PSW?", options: ["PUSH B / POP B", "PUSH PSW / POP PSW", "XTHL / SPHL", "PUSH H / POP H"], correct: 1, exp: "PSW (Program Status Word) consists of the Accumulator and the Flag register." },
+  { q: "The function of SIM instruction is to", options: ["Enable interrupts", "Disable interrupts", "Control serial output and interrupt mask", "Set interrupt priority"], correct: 2, exp: "SIM (Set Interrupt Mask) manages the serial output data (SOD) line and masks for RST 7.5, 6.5, and 5.5." },
+  { q: "Which instruction loads HL pair indirectly from memory?", options: ["LHLD", "LDA", "MOV H, M", "SHLD"], correct: 0, exp: "LHLD (Load HL Direct) copies data from two consecutive memory locations into the L and H registers." },
+  { q: "What is the size of instruction register in 8085?", options: ["8-bit", "16-bit", "20-bit", "32-bit"], correct: 0, exp: "The instruction register holds the 8-bit opcode of the fetched instruction." },
+  { q: "Memory hierarchy performance is maximized when:", options: ["Cache is very large", "Hit ratio is high and miss penalty is low", "Main memory is faster", "CPU frequency is reduced"], correct: 1, exp: "Overall speed is best when most accesses are satisfied by the cache and the time lost on a miss is minimized." }
+],
+            network: [
+  { q: "In the OSI model, which layer is responsible for segmentation, flow control, and end-to-end error control?", options: ["Network", "Transport", "Session", "Data Link"], correct: 1, exp: "Transport layer ensures reliable end-to-end delivery using segmentation, flow and error control." },
+  { q: "Which OSI layer is responsible for logical addressing and routing between networks?", options: ["Transport", "Network", "Data Link", "Session"], correct: 1, exp: "Network layer handles logical addressing (IP) and routing." },
+  { q: "Which OSI layer converts data into a format suitable for transmission, including encryption and compression?", options: ["Session", "Presentation", "Application", "Transport"], correct: 1, exp: "Presentation layer manages data syntax, encryption, and compression." },
+  { q: "Which layer of OSI model is responsible for dialog control and synchronization?", options: ["Session", "Transport", "Application", "Network"], correct: 0, exp: "Session layer establishes, maintains, and synchronizes sessions." },
+  { q: "In TCP/IP model, which layer combines the functions of OSI Session and Presentation layers?", options: ["Transport", "Application", "Internet", "Network Access"], correct: 1, exp: "TCP/IP Application layer includes application, session, and presentation functions." },
+  { q: "Which protocol operates at the Transport layer of TCP/IP and provides connection-oriented service?", options: ["UDP", "ICMP", "TCP", "IP"], correct: 2, exp: "TCP provides reliable, connection-oriented communication." },
+  { q: "Which OSI layer is responsible for framing and MAC addressing?", options: ["Physical", "Network", "Data Link", "Transport"], correct: 2, exp: "Data Link layer manages framing and physical (MAC) addressing." },
+  { q: "In IPv4, how many bits are used for addressing?", options: ["16", "32", "48", "64"], correct: 1, exp: "IPv4 uses 32-bit addressing, allowing for approximately 4.3 billion unique addresses." },
+  { q: "Which IPv4 address class provides approximately 16 million hosts per network?", options: ["Class A", "Class B", "Class C", "Class D"], correct: 0, exp: "Class A has 24 host bits (2^{24} - 2 \\approx 16.7 million hosts)." },
+  { q: "Which IPv4 class has default subnet mask 255.255.255.0?", options: ["Class A", "Class B", "Class C", "Class D"], correct: 2, exp: "Class C uses a /24 subnet mask (24 bits for network, 8 for hosts)." },
+  { q: "Which IPv4 address is reserved for loopback testing?", options: ["192.168.1.1", "127.0.0.1", "255.255.255.255", "0.0.0.0"], correct: 1, exp: "The entire 127.0.0.0/8 block is reserved for loopback, with 127.0.0.1 being the most common." },
+  { q: "Which protocol maps IP addresses to MAC addresses?", options: ["RARP", "ICMP", "ARP", "DNS"], correct: 2, exp: "Address Resolution Protocol (ARP) resolves a known IP address to a physical MAC address." },
+  { q: "Which OSI layer is closest to the physical transmission medium?", options: ["Data Link", "Network", "Physical", "Transport"], correct: 2, exp: "The Physical layer handles the hardware-level raw bit transmission." },
+  { q: "Which IPv4 address represents limited broadcast?", options: ["224.0.0.1", "255.255.255.255", "0.0.0.0", "127.0.0.1"], correct: 1, exp: "The all-ones address (255.255.255.255) is used for broadcasts within the local subnet." },
+  { q: "Which protocol reports errors and operational information in TCP/IP?", options: ["ARP", "ICMP", "TCP", "UDP"], correct: 1, exp: "ICMP handles error reporting and diagnostic messages (like Destination Unreachable)." },
+  { q: "Which OSI layer provides services like email, file transfer, and remote login?", options: ["Application", "Presentation", "Session", "Transport"], correct: 0, exp: "Application layer is the user's interface to network services." }
+ 
+
+],
+            security: [
+  { q: "In symmetric key cryptography, the primary security challenge in large networks is:", options: ["Algorithm complexity", "Key distribution", "Encryption speed", "Block size selection"], correct: 1, exp: "The main hurdle is securely distributing the single shared secret key to all authorized parties as the number of users grows." },
+  { q: "Which property mainly differentiates asymmetric encryption from symmetric encryption?", options: ["Use of block cipher", "Use of stream cipher", "Use of two mathematically related keys", "Use of hashing"], correct: 2, exp: "Asymmetric encryption uses a public key for encryption and a mathematically linked private key for decryption." },
+  { q: "AES is preferred over DES mainly because:", options: ["It uses Feistel structure", "It supports public key encryption", "It has larger effective key size", "It supports hashing"], correct: 2, exp: "AES supports 128, 192, and 256-bit keys, whereas DES's 56-bit key is easily vulnerable to modern brute-force attacks." },
+  { q: "Which attack becomes computationally infeasible due to asymmetric key sizes (~2048 bits)?", options: ["Replay attack", "Brute force key search", "Man-in-the-middle", "Side-channel attack"], correct: 1, exp: "The massive number of possible combinations in a 2048-bit key makes a brute-force search impossible with current computing power." },
+  { q: "In RSA, security is primarily based on the difficulty of:", options: ["Discrete logarithm", "Prime factorization", "Elliptic curve multiplication", "Hash inversion"], correct: 1, exp: "RSA's security rests on the mathematical difficulty of factoring a very large number into its two original prime components." },
+  { q: "Which encryption is computationally faster for bulk data transfer?", options: ["RSA", "ECC", "Symmetric encryption", "Digital signature"], correct: 2, exp: "Symmetric algorithms (like AES) use simpler mathematical operations, making them much faster and better for large files." },
+  { q: "Why is asymmetric encryption rarely used alone for data encryption?", options: ["Low security", "High key management cost", "High computational overhead", "Lack of authentication"], correct: 2, exp: "The complex math involved in asymmetric algorithms makes them too slow for encrypting large amounts of data in real-time." },
+  { q: "Which protocol uses both symmetric and asymmetric encryption together?", options: ["FTP", "HTTP", "SSL/TLS", "SMTP"], correct: 2, exp: "TLS is a hybrid system; it uses asymmetric encryption to safely exchange keys and symmetric encryption to secure the actual data flow." },
+  { q: "The main advantage of asymmetric encryption over symmetric encryption is:", options: ["Speed", "Low computation", "Simplified key distribution", "Small ciphertext"], correct: 2, exp: "Since public keys can be shared openly, there is no need for a risky 'pre-shared' secret key exchange between users." },
+  { q: "Which symmetric cipher operates on fixed-size data blocks?", options: ["RC4", "AES", "Salsa20", "One-time pad"], correct: 1, exp: "AES (Advanced Encryption Standard) is a block cipher that processes data in fixed segments of 128 bits." },
+  { q: "In hybrid cryptosystems, asymmetric encryption is mainly used to:", options: ["Encrypt entire data", "Generate hash values", "Exchange symmetric session keys", "Compress data"], correct: 2, exp: "Asymmetric encryption provides a secure 'tunnel' just to hand over the symmetric session key used for the rest of the conversation." },
+  { q: "Which key size provides roughly equivalent security to a 128-bit symmetric key?", options: ["RSA 512 bits", "RSA 1024 bits", "RSA 2048 bits", "RSA 4096 bits"], correct: 2, exp: "Standard security guidelines equate a 2048-bit RSA key to the approximate strength of a 128-bit symmetric key." }
+ 
+],
+            web: [
+  { q: "In ASP.NET Web Forms, which event is fired first in the page life cycle?", options: ["Page_Load", "Page_Init", "Page_PreRender", "Page_Unload"], correct: 1, exp: "Page_Init initializes controls and is the first major event in the page execution sequence." },
+  { q: "In a classic client–server architecture, which component is responsible for business logic?", options: ["Client", "Network", "Server", "Presentation layer"], correct: 2, exp: "The server handles data processing and the core business logic, while the client focuses on UI." },
+  { q: "ViewState in ASP.NET is stored primarily on:", options: ["Server memory", "Database", "Client browser", "Application cache"], correct: 2, exp: "ViewState is serialized into a hidden form field and stored on the client-side browser to maintain state across postbacks." },
+  { q: "Which protocol is most commonly used by ASP.NET applications for client–server communication?", options: ["FTP", "SMTP", "HTTP", "SNMP"], correct: 2, exp: "ASP.NET web applications operate over the Hypertext Transfer Protocol (HTTP)." },
+  { q: "Which ASP.NET feature helps maintain user-specific data across multiple requests?", options: ["Application state", "Session state", "Cache", "Cookie-less mode"], correct: 1, exp: "Session state allows developers to store and retrieve values for a specific user as they navigate different pages." },
+  { q: "In client–server architecture, a 'thin client' mainly performs:", options: ["Data processing", "Business logic", "Presentation", "Database management"], correct: 2, exp: "Thin clients have minimal processing power and primarily handle the User Interface (Presentation)." },
+  { q: "Which ASP.NET control maintains its state automatically across postbacks?", options: ["HTML control", "Web server control", "Literal control", "AJAX control"], correct: 1, exp: "Web server controls are designed to use ViewState to preserve their property values during round trips." },
+  { q: "The main drawback of ViewState is:", options: ["Security", "Increased page size", "Server load", "Network failure"], correct: 1, exp: "Since ViewState data is sent back and forth between client and server, it significantly increases the page payload size." },
+  { q: "Which file defines configuration settings in ASP.NET?", options: ["Global.asax", "Web.config", "App.config", "Default.aspx"], correct: 1, exp: "Web.config is the primary XML-based file used for application-level settings like database strings and security." },
+  { q: "In a 3-tier client–server model, the middle tier represents:", options: ["Database", "Presentation", "Business logic", "Network"], correct: 2, exp: "The middle tier (Application tier) processes the functional business rules and logic." },
+  { q: "Which ASP.NET state management technique survives browser restarts?", options: ["ViewState", "Session", "Cookies", "Application state"], correct: 2, exp: "Persistent cookies are stored on the user's hard drive and remain available even after the browser is closed." },
+  { q: "Which ASP.NET object is shared among all users?", options: ["Session", "Cache", "Application", "ViewState"], correct: 2, exp: "The Application object is global; data stored here is accessible by every user currently using the web app." },
+  { q: "Which component handles routing in ASP.NET MVC?", options: ["Model", "View", "Controller", "RouteConfig"], correct: 3, exp: "RouteConfig is the class where URL patterns are mapped to specific controllers and actions." }
+ 
+
+],
+            android: [
+  { q: "Which Android component is primarily responsible for managing the lifecycle of UI screens?", options: ["Service", "Broadcast Receiver", "Activity", "Content Provider"], correct: 2, exp: "An Activity represents a single screen with a user interface and manages lifecycle states like created, started, and resumed." },
+  { q: "The Android Runtime (ART) mainly improves performance by using:", options: ["Interpretation only", "Ahead-of-Time compilation", "Just-in-Time compilation only", "Bytecode translation at runtime"], correct: 1, exp: "ART uses Ahead-of-Time (AOT) compilation to translate the entire app into native machine code during installation, making it faster during execution." },
+  { q: "Which layer of Android architecture directly interacts with hardware drivers?", options: ["Application Framework", "Applications", "Linux Kernel", "Android Runtime"], correct: 2, exp: "The Linux Kernel layer handles core system services such as hardware drivers, process management, and memory management." },
+  { q: "In Android, Zygote process is mainly used to:", options: ["Manage UI threads", "Launch system services", "Reduce application startup time", "Handle background services"], correct: 2, exp: "Zygote is a 'parent' process that preloads system classes and resources, then forks itself to launch new apps quickly." },
+  { q: "Which file defines app permissions and components?", options: ["build.gradle", "AndroidManifest.xml", "settings.gradle", "proguard-rules.pro"], correct: 1, exp: "Every app must have a manifest file at the root of the project source set to declare components and required permissions." },
+  { q: "Which callback is invoked when an activity becomes partially visible?", options: ["onCreate()", "onStart()", "onResume()", "onPause()"], correct: 3, exp: "onPause() is triggered when the activity is no longer in the foreground but is still partially visible (e.g., behind a transparent dialog)." },
+  { q: "Explicit intents are mainly used to:", options: ["Communicate with system apps", "Launch activities within the same app", "Share data across apps", "Access content providers"], correct: 1, exp: "Explicit intents name the specific component (class name) to be started, typically used for internal navigation." },
+  { q: "Which flag prevents multiple instances of the same activity?", options: ["FLAG_ACTIVITY_CLEAR_TOP", "FLAG_ACTIVITY_SINGLE_TOP", "FLAG_ACTIVITY_NEW_TASK", "FLAG_ACTIVITY_NO_HISTORY"], correct: 1, exp: "SINGLE_TOP ensures that if an instance of the activity already exists at the top of the stack, it is reused rather than recreated." },
+  { q: "Which lifecycle method is best suited to release heavy resources?", options: ["onPause()", "onStop()", "onDestroy()", "onRestart()"], correct: 1, exp: "onStop() is called when the activity is no longer visible, making it the ideal place to release resources like GPS or heavy animations." },
+  { q: "Which intent filter action is used to respond to boot completion?", options: ["ACTION_START", "ACTION_REBOOT", "ACTION_BOOT_COMPLETED", "ACTION_SYSTEM_READY"], correct: 2, exp: "The ACTION_BOOT_COMPLETED broadcast is sent by the system once the device has finished booting." },
+  { q: "Which layout is most efficient for complex UI hierarchies?", options: ["LinearLayout", "RelativeLayout", "ConstraintLayout", "FrameLayout"], correct: 2, exp: "ConstraintLayout allows you to create large and complex layouts with a flat view hierarchy, improving rendering performance." },
+  { q: "dp unit in Android ensures:", options: ["Fixed pixel size", "Screen density independence", "Resolution independence only", "Font scaling"], correct: 1, exp: "Density-independent pixels (dp) scale items based on the physical density of the screen, providing consistent sizing across devices." }
+ 
+],
+            current: [
+  { q: "POLNET (Police Network) in India primarily aims to:", options: ["Provide broadband internet to civilians", "Enable encrypted communication among police units", "Replace mobile cellular networks", "Support TV broadcasting for police training"], correct: 1, exp: "POLNET is a dedicated secure network designed for encrypted voice and data communication specifically for police and paramilitary forces." },
+  { q: "POLNET communication mainly uses:", options: ["Optical fiber backbone", "Satellite links with VSAT terminals", "Public GSM networks", "Wi-Fi mesh only"], correct: 1, exp: "POLNET heavily utilizes Very Small Aperture Terminal (VSAT) technology to ensure nationwide connectivity, especially in remote areas." },
+  { q: "Which satellite band is commonly used for POLNET VSAT communication?", options: ["L-band", "C-band", "Ku-band", "V-band"], correct: 2, exp: "The Ku-band is preferred for VSAT because it allows for smaller antenna sizes and supports higher data transmission rates." },
+  { q: "POLNET is implemented and managed by:", options: ["BSNL", "ISRO", "Ministry of Home Affairs", "TRAI"], correct: 2, exp: "The Directorate of Coordination Police Wireless (DCPW), under the Ministry of Home Affairs, manages POLNET." },
+  { q: "One major advantage of satellite-based police networks during disasters is:", options: ["Low latency", "Independence from terrestrial infrastructure", "High bandwidth compared to fiber", "No need for encryption"], correct: 1, exp: "Unlike cellular towers or fiber lines, satellite links are not affected by ground-level physical damage during floods or earthquakes." },
+  { q: "Which technology enables real-time disaster monitoring using spatial data?", options: ["SCADA", "GIS", "ERP", "VoIP"], correct: 1, exp: "Geographic Information Systems (GIS) allow authorities to visualize and analyze disaster patterns on digital maps." },
+  { q: "NDMA in India primarily uses which technology for early warning dissemination?", options: ["Optical sensors", "Cell broadcast and satellite links", "Bluetooth networks", "RFID tags"], correct: 1, exp: "Cell Broadcast allows sending emergency alerts to all mobile phones in a specific geographic area simultaneously." },
+  { q: "Doppler Weather Radar helps in disaster management by:", options: ["Measuring seismic activity", "Tracking cyclone movement and rainfall intensity", "Detecting landslides directly", "Monitoring air pollution"], correct: 1, exp: "Doppler radars track the velocity of precipitation and wind, providing critical data for cyclone and flood warnings." },
+  { q: "UAVs (drones) are increasingly used in disaster response mainly for:", options: ["Long-distance data storage", "High-resolution aerial surveillance", "Fiber optic cable laying", "Spectrum allocation"], correct: 1, exp: "Unmanned Aerial Vehicles provide real-time visuals of disaster-hit areas where human access is restricted or dangerous." },
+  { q: "Which satellite system supports disaster management in India?", options: ["NAVIC", "INSAT / GSAT", "IRNSS only", "EDUSAT"], correct: 1, exp: "The INSAT and GSAT series provide multi-purpose satellite services for communication, meteorology, and search-and-rescue." },
+  { q: "Real-time city surveillance projects in India are often part of:", options: ["Digital India", "Smart Cities Mission", "BharatNet", "Make in India"], correct: 1, exp: "The Smart Cities Mission integrates technology like CCTV and Integrated Command Centers for urban safety." },
+  { q: "The backbone of modern surveillance analytics is:", options: ["Manual observation", "AI and machine learning", "Analog video processing", "Static image storage"], correct: 1, exp: "AI and ML algorithms enable automated detection of faces, license plates, and suspicious activities." },
+  { q: "Which communication link is preferred for real-time HD surveillance streaming?", options: ["Narrowband VHF", "Microwave / optical fiber", "HF radio", "Paging networks"], correct: 1, exp: "HD video requires high-throughput links; optical fiber or high-capacity microwave links are used for backend transport." },
+  { q: "Command and Control Centers (CCC) integrate data from:", options: ["Only CCTV cameras", "Multiple sources like CCTV, GPS, sensors", "Only police radio sets", "Only satellite phones"], correct: 1, exp: "A CCC acts as a data fusion hub, combining inputs from various IoT and surveillance systems for a unified view." },
+  { q: "Facial recognition accuracy largely depends on:", options: ["Camera color", "Algorithm training data quality", "Antenna height", "Transmission power"], correct: 1, exp: "The accuracy of AI recognition is determined by the quality and diversity of the datasets used to train the neural networks." },
+  { q: "LTE-based public safety networks provide:", options: ["Only voice communication", "High-speed data, video, and voice", "Analog radio only", "Broadcast TV services"], correct: 1, exp: "Public Safety LTE (PS-LTE) moves beyond simple voice to support broadband applications like live video streaming." },
+  { q: "Mission-critical push-to-talk (MCPTT) is a feature of:", options: ["GSM Phase-1", "LTE public safety systems", "Optical SONET", "Satellite TV"], correct: 1, exp: "MCPTT is a 3GPP standard that ensures instant group voice communication with high priority on LTE networks." },
+  { q: "Approximate latency required for real-time surveillance is:", options: ["Below 1\text{ second}", "10–20 seconds", "Above 1 minute", "Not latency-sensitive"], correct: 0, exp: "Real-time surveillance requires sub-second latency to allow immediate intervention during an ongoing incident." },
+  { q: "Which technology supports location tracking of police vehicles?", options: ["RFID passive tags", "GPS/GNSS", "NFC", "Infrared sensors"], correct: 1, exp: "Global Positioning System (GPS) receivers in vehicles transmit coordinates to a central server for tracking." },
+  { q: "Encrypted police communication systems mainly ensure:", options: ["High speed only", "Confidentiality and integrity", "Free spectrum usage", "Public accessibility"], correct: 1, exp: "Encryption ensures that sensitive tactical information cannot be intercepted (confidentiality) or altered (integrity) by unauthorized parties." },
+  { q: "AI-based predictive policing mainly relies on:", options: ["Random patrol data", "Historical crime data and pattern analysis", "Manual intelligence reports only", "Satellite weather data"], correct: 1, exp: "AI models analyze past crime data to identify 'hotspots' where future crimes are statistically more likely to occur." },
+  { q: "Future trend in public safety communication is:", options: ["Analog radio", "AI-integrated smart networks", "Manual systems", "Wired-only networks"], correct: 1, exp: "The next decade will see AI managing the radio waves and the cameras to predict and stop emergencies before they happen." }
+]
+        };
+
+
+        let currentTopic = 'EDC';
+        let currentIdx = 0;
+        let score = 0;
+        let userAnswers = {}; 
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function changeTopic(topicKey, element) {
+            document.querySelectorAll('.topic-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            currentTopic = topicKey;
+            currentIdx = 0;
+            score = 0;
+            userAnswers = {}; 
+            document.getElementById('score').innerText = "0";
+            document.getElementById('topic-display').innerText = "Subject: " + element.innerText.split('. ')[1];
+            if(window.innerWidth <= 900) toggleMenu();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = allQuizzes[currentTopic][currentIdx];
+            const total = allQuizzes[currentTopic].length;
+            
+            document.getElementById('q-counter').innerText = `Question ${currentIdx + 1}/${total}`;
+            document.getElementById('question').innerText = data.q;
+            
+            const optionsBox = document.getElementById('options-container');
+            optionsBox.innerHTML = '';
+
+            data.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                
+                if (userAnswers[currentIdx] !== undefined) {
+                    btn.disabled = true;
+                    if (index === data.correct) btn.classList.add('correct');
+                    if (index === userAnswers[currentIdx] && index !== data.correct) btn.classList.add('wrong');
+                    showExplanation();
+                } else {
+                    btn.onclick = () => checkAnswer(index, btn);
+                    document.getElementById('explanation').style.display = 'none';
+                }
+                optionsBox.appendChild(btn);
+            });
+
+            document.getElementById('prev-btn').disabled = currentIdx === 0;
+            document.getElementById('next-btn').innerText = currentIdx === total - 1 ? "Finish" : "Next →";
+        }
+
+        function jumpToQuestion() {
+            const input = document.getElementById('jump-input').value;
+            const targetIdx = parseInt(input) - 1;
+            const total = allQuizzes[currentTopic].length;
+            if (targetIdx >= 0 && targetIdx < total) {
+                currentIdx = targetIdx;
+                loadQuestion();
+                document.getElementById('jump-input').value = ''; 
+            } else {
+                alert(`Please enter a number between 1 and ${total}`);
+            }
+        }
+
+        function checkAnswer(selectedIndex, btn) {
+            const data = allQuizzes[currentTopic][currentIdx];
+            userAnswers[currentIdx] = selectedIndex;
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+            if (selectedIndex === data.correct) {
+                btn.classList.add('correct');
+                score++;
+                document.getElementById('score').innerText = score;
+            } else {
+                btn.classList.add('wrong');
+                allBtns[data.correct].classList.add('correct');
+            }
+            showExplanation();
+        }
+
+        function showExplanation() {
+            document.getElementById('exp-text').innerText = allQuizzes[currentTopic][currentIdx].exp;
+            document.getElementById('explanation').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            if (currentIdx < allQuizzes[currentTopic].length - 1) {
+                currentIdx++;
+                loadQuestion();
+            } else {
+                alert(`Quiz Completed! Final Score: ${score}/${allQuizzes[currentTopic].length}`);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                loadQuestion();
+            }
+        }
+
+        // View Counter Logic (Local Storage for Demo)
+        let views = localStorage.getItem("kaushalya_views") || 0;
+        views = parseInt(views) + 1;
+        localStorage.setItem("kaushalya_views", views);
+        document.getElementById("view-count").innerText = views;
+
+        window.onload = loadQuestion;
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.onkeydown = function(e) {
+
+if(e.keyCode == 123) return false;
+
+if(e.ctrlKey && e.shiftKey && e.keyCode == 73) return false;
+
+if(e.ctrlKey && e.shiftKey && e.keyCode == 74) return false;
+
+if(e.ctrlKey && e.keyCode == 85) return false;
+
+};
+    </script>
+</body>
+</html>
