@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,45 +50,53 @@
       text-align: center;
     }
 
-    .loaderOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(5px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
+    .loaderOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999999;
+}
 
-    .loaderBox {
-      background: #fff;
-      border-radius: 22px;
-      padding: 28px;
-      min-width: 250px;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-    }
+.loaderBox{
+    width:230px;
+    padding:35px;
+    border-radius:24px;
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.25);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    box-shadow:0 20px 50px rgba(0,0,0,.3);
+    text-align:center;
+}
 
-    .loader {
-      width: 56px;
-      height: 56px;
-      border: 6px solid #e2e8f0;
-      border-top: 6px solid var(--primary);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-      margin: 0 auto 14px;
-    }
+.loader{
+    width:70px;
+    height:70px;
+    margin:auto;
+    border-radius:50%;
+    border:5px solid rgba(255,255,255,.25);
+    border-top:5px solid #2563eb;
+    border-right:5px solid #00d4ff;
+    animation:rotate .8s linear infinite;
+}
 
-    #loaderText {
-      color: #334155;
-      font-weight: 700;
-      line-height: 1.4;
+@keyframes rotate{
+    to{
+        transform:rotate(360deg);
     }
+}
 
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
+#loaderText{
+    margin-top:20px;
+    color:#fff;
+    font-size:16px;
+    font-weight:700;
+}
 
     #step1,
     #googleLogin {
@@ -669,6 +678,7 @@ function appsScriptJsonp(params) {
 
 async function payNow() {
   try {
+showLoader("Preparing Secure Payment...");
     const email = prompt("Enter your Gmail ID for subscription:");
 
     if (!email) {
@@ -679,6 +689,8 @@ async function payNow() {
 
     if (!cleanEmail.endsWith("@gmail.com")) {
       alert("Please enter only Gmail ID.");
+hideLoader();
+
       return;
     }
 
@@ -686,6 +698,7 @@ async function payNow() {
       action: "createRazorpayOrder",
       email: cleanEmail
     });
+hideLoader();
 
     if (!order.success) {
       alert(order.error || "Could not create payment order.");
@@ -713,6 +726,7 @@ async function payNow() {
       },
 
       handler: async function(response) {
+ showLoader("Verifying Payment...");
         const verify = await appsScriptJsonp({
           action: "verifyRazorpayPayment",
           email: cleanEmail,
@@ -720,7 +734,7 @@ async function payNow() {
           razorpay_order_id: response.razorpay_order_id,
           razorpay_signature: response.razorpay_signature
         });
-
+hideLoader();
         if (verify.success) {
           alert("Payment successful. Your Gmail is activated now.");
 
@@ -744,6 +758,7 @@ async function payNow() {
     rzp.open();
 
   } catch (error) {
+hideLoader();
     console.error(error);
     alert(error.message || "Payment failed.");
   }
