@@ -551,6 +551,11 @@
     </div>
   </div>
 
+  
+ <button onclick="payNow()" style="background:#10b981;color:white;">
+  Pay Now ₹49
+</button>
+
   <div id="googleLogin" class="hidden">
     <div class="auth-box">
       <h2>Email Verified</h2>
@@ -618,6 +623,130 @@
       </div>
     </div>
   </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweUyvtO0SoRy2SLOdYQ1gzxAHVCRmMvWcxJfS8XzaYBCT-9aR1mRahTUoqzCyz2Xx3AQ/exec";
+  
+
+function appsScriptJsonp(params) {
+  return new Promise((resolve, reject) => {
+    const callbackName =
+      "jsonp_cb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+
+    params.callback = callbackName;
+
+    const script = document.createElement("script");
+    script.src =
+      APPS_SCRIPT_URL + "?" + new URLSearchParams(params).toString();
+
+    window[callbackName] = function(data) {
+      delete window[callbackName];
+
+      if (script.parentNode) {
+        document.body.removeChild(script);
+      }
+
+      resolve(data);
+    };
+
+    script.onerror = function() {
+      delete window[callbackName];
+
+      if (script.parentNode) {
+        document.body.removeChild(script);
+      }
+
+      reject(new Error("Cannot connect to Apps Script."));
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
+async function payNow() {
+  try {
+    const email = prompt("Enter your Gmail ID for subscription:");
+
+    if (!email) {
+      return;
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail.endsWith("@gmail.com")) {
+      alert("Please enter only Gmail ID.");
+      return;
+    }
+
+    const order = await appsScriptJsonp({
+      action: "createRazorpayOrder",
+      email: cleanEmail
+    });
+
+    if (!order.success) {
+      alert(order.error || "Could not create payment order.");
+      return;
+    }
+
+    const options = {
+      key: order.key_id,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Kaushalya Academy",
+      description: "PSI Wireless MCQ Practice Access",
+      order_id: order.order_id,
+
+      prefill: {
+        email: cleanEmail
+      },
+
+      notes: {
+        email: cleanEmail
+      },
+
+      theme: {
+        color: "#2563eb"
+      },
+
+      handler: async function(response) {
+        const verify = await appsScriptJsonp({
+          action: "verifyRazorpayPayment",
+          email: cleanEmail,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature
+        });
+
+        if (verify.success) {
+          alert("Payment successful. Your Gmail is activated now.");
+
+          window.location.href =
+            window.location.origin +
+            window.location.pathname +
+            "?payment=success";
+        } else {
+          alert(verify.error || "Payment verification failed.");
+        }
+      },
+
+      modal: {
+        ondismiss: function() {
+          console.log("Payment popup closed.");
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message || "Payment failed.");
+  }
+}
+</script>
 
 <script>
 /* 
