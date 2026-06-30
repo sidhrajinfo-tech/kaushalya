@@ -682,6 +682,7 @@ showLoader("Preparing Secure Payment...");
     const email = prompt("Enter your Gmail ID for subscription:");
 
     if (!email) {
+      hideLoader();
       return;
     }
 
