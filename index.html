@@ -537,7 +537,18 @@
       .btn {
         padding: 13px 12px;
       }
+
     }
+
+.demo-btn {
+  background: #7c3aed;
+  color: white;
+  border-radius: 14px 0 14px 0;
+}
+
+.demo-btn:hover{
+  border-radius: 0 14px 0 14px;
+}
   </style>
 </head>
 
@@ -556,10 +567,16 @@
       <h2>Enter Email</h2>
       <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
       <button id="continueBtn" type="button">Continue</button>
-      <div class="small-note">Buy Subscription ₹49/- only<br>
+      <div class="small-note">Buy Subscription ₹49/- only
+<br>
        <button onclick="payNow()" style="background:#10b981;color:white;">
   Pay Now
 </button>
+
+<br><br>
+ <a class="btn demo-btn" href="https://kaushalyaacademy.online/demo" target="_blank">
+      DEMO
+    </a>
       </div>
     </div>
   </div>
