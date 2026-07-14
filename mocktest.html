@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kaushalya Academy Mock Test Portal</title>
+  <meta name="theme-color" content="#172554">
+  <meta name="description" content="Secure online mock-test portal">
+  <style>
+:root {
+  --navy-950: #0b1538;
+  --navy-900: #172554;
+  --navy-800: #1e3a8a;
+  --blue-600: #2563eb;
+  --blue-500: #3b82f6;
+  --cyan-400: #22d3ee;
+  --amber-500: #f59e0b;
+  --rose-600: #e11d48;
+  --green-600: #16a34a;
+  --green-100: #dcfce7;
+  --rose-100: #ffe4e6;
+  --slate-900: #0f172a;
+  --slate-700: #334155;
+  --slate-500: #64748b;
+  --slate-300: #cbd5e1;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  --white: #ffffff;
+  --surface: rgba(255,255,255,.96);
+  --shadow: 0 22px 65px rgba(15, 23, 42, .12);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 11px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--slate-900);
+  background:
+    radial-gradient(circle at 8% 3%, rgba(34,211,238,.16), transparent 28rem),
+    radial-gradient(circle at 95% 10%, rgba(37,99,235,.13), transparent 30rem),
+    #f8fafc;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+.hidden { display: none !important; }
+.mobile-only { display: none; }
+
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.site-header {
+  height: 76px;
+  padding: 0 clamp(18px, 4vw, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(203,213,225,.7);
+}
+.brand {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--slate-900);
+  text-align: left;
+}
+.brand-mark {
+  width: 45px; height: 45px; border-radius: 15px;
+  display: grid; place-items: center;
+  color: white; font-weight: 900; letter-spacing: -.5px;
+  background: linear-gradient(135deg, var(--navy-900), var(--blue-500));
+  box-shadow: 0 10px 28px rgba(37,99,235,.25);
+}
+.brand strong, .brand small { display: block; }
+.brand strong { font-size: 1rem; }
+.brand small { color: var(--slate-500); font-size: .75rem; }
+.header-actions { display: flex; align-items: center; gap: 16px; }
+.user-chip { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--slate-100); color: var(--navy-900); font-weight: 800;
+}
+.user-chip-copy strong, .user-chip-copy small { display: block; }
+.user-chip-copy small { color: var(--slate-500); max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+main { flex: 1; }
+.view { min-height: calc(100vh - 136px); }
+.page-container { width: min(1200px, calc(100% - 36px)); margin: 0 auto; padding: 42px 0 70px; }
+
+.landing-view { display: grid; align-items: center; padding: 52px clamp(18px, 5vw, 72px) 72px; }
+.hero-grid { width: min(1220px, 100%); margin: 0 auto; display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(38px, 7vw, 90px); align-items: center; }
+.hero-copy h1 { font-size: clamp(2.4rem, 5.4vw, 5.2rem); letter-spacing: -.055em; line-height: 1.02; margin: 16px 0 22px; max-width: 780px; }
+.hero-copy > p { font-size: clamp(1rem, 1.6vw, 1.22rem); color: var(--slate-500); max-width: 680px; }
+.eyebrow { color: var(--blue-600); text-transform: uppercase; font-weight: 800; letter-spacing: .14em; font-size: .72rem; }
+.feature-row { display: flex; gap: clamp(24px, 4vw, 54px); margin-top: 36px; }
+.feature-row div { display: flex; flex-direction: column; }
+.feature-row strong { font-size: 1.65rem; color: var(--navy-900); }
+.feature-row span { color: var(--slate-500); font-size: .85rem; }
+.card { background: var(--surface); border: 1px solid rgba(203,213,225,.65); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+.auth-card { padding: clamp(24px, 4vw, 38px); }
+.card-heading { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 28px; }
+.card-heading h2, .modal h2 { margin: 0 0 4px; font-size: 1.55rem; letter-spacing: -.025em; }
+.card-heading p, .modal > p { margin: 0; color: var(--slate-500); }
+.step-badge { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; flex: 0 0 auto; background: #dbeafe; color: var(--blue-600); font-weight: 800; }
+label { display: block; font-size: .83rem; font-weight: 750; margin: 0 0 8px; color: var(--slate-700); }
+input {
+  width: 100%; min-height: 49px; padding: 0 14px;
+  border-radius: 12px; border: 1px solid var(--slate-300); background: white; outline: none;
+  transition: border .2s, box-shadow .2s;
+}
+input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(59,130,246,.13); }
+.input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.btn {
+  min-height: 46px; padding: 0 20px; border: 1px solid transparent; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  font-weight: 750; transition: transform .18s, box-shadow .18s, background .18s, opacity .18s;
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:disabled { opacity: .48; cursor: not-allowed; }
+.btn-primary { color: white; background: linear-gradient(135deg, var(--navy-800), var(--blue-600)); box-shadow: 0 10px 24px rgba(37,99,235,.22); }
+.btn-accent { color: #2a1a00; background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 10px 24px rgba(245,158,11,.2); }
+.btn-danger { color: white; background: linear-gradient(135deg, #be123c, var(--rose-600)); }
+.btn-ghost { color: var(--slate-700); background: white; border-color: var(--slate-200); }
+.btn-small { min-height: 38px; padding: 0 14px; font-size: .85rem; }
+.btn-block { width: 100%; }
+.btn-google { width: 100%; background: white; border-color: var(--slate-200); color: var(--slate-700); }
+.btn-google svg { width: 21px; height: 21px; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--slate-500); font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; margin: 22px 0; }
+.divider::before, .divider::after { content: ""; height: 1px; flex: 1; background: var(--slate-200); }
+.status-message { padding: 11px 13px; border-radius: 11px; margin-top: 12px; font-size: .85rem; }
+.status-message.success { color: #166534; background: var(--green-100); }
+.status-message.error { color: #9f1239; background: var(--rose-100); }
+.payment-callout { margin-top: 22px; padding: 16px; border-radius: 15px; background: var(--slate-100); display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.payment-callout strong, .payment-callout span { display: block; }
+.payment-callout span { color: var(--slate-500); font-size: .82rem; }
+.security-note { margin: 17px 0 0; color: var(--slate-500); font-size: .76rem; text-align: center; }
+
+.dashboard-hero { padding: clamp(25px, 4vw, 42px); display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, #ffffff, #eff6ff); }
+.dashboard-hero h1 { margin: 8px 0 6px; font-size: clamp(1.8rem, 3.5vw, 3rem); letter-spacing: -.04em; }
+.dashboard-hero p { margin: 0; color: var(--slate-500); }
+.dashboard-stat { width: 130px; height: 130px; border-radius: 50%; background: var(--navy-900); color: white; display: grid; place-content: center; text-align: center; box-shadow: 0 18px 40px rgba(23,37,84,.24); flex: 0 0 auto; }
+.dashboard-stat span { font-size: 2.3rem; font-weight: 900; line-height: 1; }
+.dashboard-stat small { opacity: .72; }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin: 42px 0 20px; }
+.section-heading h1, .section-heading h2 { margin: 3px 0; letter-spacing: -.03em; }
+.section-heading p { margin: 0; color: var(--slate-500); }
+.test-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.test-card { padding: 22px; box-shadow: 0 14px 36px rgba(15,23,42,.07); display: flex; flex-direction: column; gap: 17px; }
+.test-card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.test-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: #dbeafe; color: var(--blue-600); font-weight: 900; }
+.status-pill { padding: 5px 9px; border-radius: 999px; font-size: .7rem; font-weight: 800; }
+.status-pill.not-attempted { background: var(--slate-100); color: var(--slate-500); }
+.status-pill.attempted { background: var(--green-100); color: #166534; }
+.status-pill.in-progress { background: #fef3c7; color: #92400e; }
+.test-card h3 { margin: 0; font-size: 1.15rem; }
+.test-meta { display: flex; gap: 14px; color: var(--slate-500); font-size: .8rem; }
+.previous-result { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; background: var(--slate-100); border-radius: 12px; }
+.previous-result small, .previous-result strong { display: block; }
+.previous-result small { color: var(--slate-500); font-size: .7rem; }
+.test-card-actions { margin-top: auto; display: flex; gap: 9px; }
+.test-card-actions .btn { flex: 1; }
+.empty-state { padding: 50px; text-align: center; color: var(--slate-500); }
+
+.test-toolbar { min-height: 82px; padding: 10px clamp(14px, 3vw, 36px); position: sticky; top: 76px; z-index: 40; display: grid; grid-template-columns: minmax(180px,1fr) auto auto; align-items: center; gap: 20px; background: rgba(255,255,255,.96); backdrop-filter: blur(16px); border-bottom: 1px solid var(--slate-200); }
+.test-toolbar-title { display: flex; align-items: center; gap: 12px; }
+.test-toolbar-title small, .test-toolbar-title strong { display: block; }
+.test-toolbar-title small { color: var(--slate-500); }
+.icon-button { width: 39px; height: 39px; border-radius: 10px; border: 1px solid var(--slate-200); background: white; color: var(--slate-700); }
+.test-metrics { display: flex; gap: 8px; }
+.test-metrics > div { min-width: 90px; padding: 8px 12px; border-radius: 12px; background: var(--slate-100); text-align: center; }
+.test-metrics small, .test-metrics strong { display: block; }
+.test-metrics small { font-size: .66rem; color: var(--slate-500); text-transform: uppercase; letter-spacing: .08em; }
+.test-metrics strong { font-variant-numeric: tabular-nums; }
+.timer-box { background: var(--navy-900) !important; color: white; }
+.timer-box small { color: rgba(255,255,255,.65) !important; }
+.timer-box.warning { background: #92400e !important; }
+.timer-box.danger { background: #9f1239 !important; animation: pulse 1s infinite; }
+@keyframes pulse { 50% { transform: scale(1.025); } }
+.test-layout { width: min(1500px, 100%); margin: 0 auto; display: grid; grid-template-columns: 250px minmax(0,1fr); }
+.question-sidebar { position: sticky; top: 158px; height: calc(100vh - 158px); overflow: auto; padding: 22px 18px 40px; background: white; border-right: 1px solid var(--slate-200); }
+.sidebar-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; color: var(--slate-500); font-size: .72rem; margin-bottom: 16px; }
+.legend span, .review-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: var(--slate-300); }
+.legend-dot.answered, .legend-dot.correct { background: var(--green-600); }
+.legend-dot.wrong { background: var(--rose-600); }
+.legend-dot.unattempted, .legend-dot.unanswered { background: var(--slate-300); }
+.question-nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.question-nav button { aspect-ratio: 1; border-radius: 9px; border: 1px solid var(--slate-200); background: white; font-size: .72rem; color: var(--slate-500); }
+.question-nav button.answered { background: var(--green-600); color: white; border-color: var(--green-600); }
+.questions-column { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 70px; }
+.test-notice { padding: 13px 15px; border-radius: 12px; background: #eff6ff; color: #1e40af; font-size: .82rem; margin-bottom: 16px; }
+.question-card { padding: clamp(18px, 3vw, 28px); margin-bottom: 16px; box-shadow: 0 12px 32px rgba(15,23,42,.055); scroll-margin-top: 174px; }
+.question-number { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 29px; padding: 0 10px; border-radius: 999px; background: var(--navy-900); color: white; font-size: .75rem; font-weight: 800; margin-bottom: 12px; }
+.question-text { font-size: 1.02rem; font-weight: 650; white-space: pre-wrap; }
+.options-list { display: grid; gap: 10px; margin-top: 18px; }
+.option-label { display: grid; grid-template-columns: 25px 1fr; align-items: start; gap: 11px; padding: 13px 14px; border: 1px solid var(--slate-200); border-radius: 12px; cursor: pointer; transition: background .16s, border .16s; }
+.option-label:hover { background: #f8fafc; border-color: #93c5fd; }
+.option-label input { position: absolute; opacity: 0; pointer-events: none; }
+.option-letter { width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--slate-300); color: var(--slate-500); font-weight: 800; font-size: .75rem; }
+.option-label.selected { background: #eff6ff; border-color: var(--blue-500); }
+.option-label.selected .option-letter { background: var(--blue-600); color: white; border-color: var(--blue-600); }
+.option-text { white-space: pre-wrap; }
+.bottom-submit { padding: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.bottom-submit strong, .bottom-submit span { display: block; }
+.bottom-submit span { color: var(--slate-500); font-size: .82rem; }
+
+.review-page { max-width: 1000px; }
+.review-heading { align-items: center; }
+.review-legend { padding: 15px 18px; display: flex; gap: 22px; box-shadow: none; margin-bottom: 18px; }
+.review-card { padding: 24px; margin-bottom: 16px; box-shadow: 0 12px 34px rgba(15,23,42,.055); }
+.review-status { float: right; padding: 5px 10px; border-radius: 999px; font-size: .72rem; font-weight: 800; }
+.review-status.correct { color: #166534; background: var(--green-100); }
+.review-status.wrong { color: #9f1239; background: var(--rose-100); }
+.review-status.unattempted { color: var(--slate-500); background: var(--slate-100); }
+.review-option { display: grid; grid-template-columns: 27px 1fr auto; gap: 10px; align-items: center; padding: 12px 13px; border: 1px solid var(--slate-200); border-radius: 11px; margin-top: 9px; }
+.review-option.correct-answer { background: var(--green-100); border-color: #86efac; }
+.review-option.wrong-answer { background: var(--rose-100); border-color: #fda4af; }
+.review-option.user-unattempted { background: var(--slate-100); }
+.option-tag { font-size: .68rem; font-weight: 800; color: var(--slate-500); }
+
+.site-footer { min-height: 60px; padding: 15px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--slate-500); font-size: .74rem; border-top: 1px solid var(--slate-200); background: white; }
+.site-footer a { color: var(--blue-600); font-weight: 750; text-decoration: none; }
+
+.modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 18px; background: rgba(2,6,23,.62); backdrop-filter: blur(8px); }
+.modal { width: min(480px, 100%); max-height: calc(100vh - 36px); overflow: auto; padding: 30px; position: relative; }
+.modal-wide { width: min(620px, 100%); }
+.modal-compact { width: min(430px, 100%); text-align: center; }
+.modal-close { position: absolute; right: 16px; top: 14px; border: 0; background: transparent; font-size: 1.5rem; color: var(--slate-500); }
+.modal form { display: grid; gap: 8px; margin-top: 22px; }
+.modal form input { margin-bottom: 8px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.instruction-test-name { margin: 18px 0; padding: 13px; background: var(--slate-100); border-radius: 12px; font-weight: 800; }
+.instruction-list { padding-left: 22px; color: var(--slate-700); }
+.instruction-list li { margin: 10px 0; }
+.warning-icon { width: 54px; height: 54px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; color: white; background: var(--rose-600); font-weight: 900; font-size: 1.5rem; }
+.result-modal { text-align: center; width: min(560px, 100%); }
+.result-trophy { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 12px; background: #fef3c7; color: #b45309; font-size: 1.7rem; }
+.result-score { margin: 20px auto; width: 170px; height: 170px; border-radius: 50%; display: grid; place-content: center; background: linear-gradient(135deg, var(--navy-900), var(--blue-600)); color: white; }
+.result-score strong { font-size: 2.15rem; }
+.result-score span { opacity: .78; }
+.result-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+.result-grid div { padding: 11px 6px; border-radius: 11px; background: var(--slate-100); }
+.result-grid small, .result-grid strong { display: block; }
+.result-grid small { font-size: .63rem; color: var(--slate-500); }
+
+.loading-overlay { position: fixed; inset: 0; z-index: 200; display: grid; place-content: center; justify-items: center; gap: 13px; background: rgba(248,250,252,.82); backdrop-filter: blur(8px); }
+.spinner { width: 46px; height: 46px; border-radius: 50%; border: 4px solid var(--slate-200); border-top-color: var(--blue-600); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast-container { position: fixed; right: 18px; bottom: 18px; z-index: 250; display: grid; gap: 9px; width: min(370px, calc(100% - 36px)); }
+.toast { padding: 13px 15px; border-radius: 12px; color: white; box-shadow: var(--shadow); animation: toast-in .25s ease; }
+.toast.success { background: #166534; }
+.toast.error { background: #9f1239; }
+.toast.info { background: var(--navy-900); }
+@keyframes toast-in { from { transform: translateY(8px); opacity: 0; } }
+
+@media (max-width: 980px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-copy { text-align: center; }
+  .hero-copy > p { margin-inline: auto; }
+  .feature-row { justify-content: center; }
+  .auth-card { width: min(600px,100%); margin: 0 auto; }
+  .test-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .test-toolbar { grid-template-columns: 1fr auto; }
+  .test-toolbar .btn-danger { grid-column: 2; grid-row: 1; }
+  .test-metrics { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+  .test-layout { grid-template-columns: 1fr; }
+  .question-sidebar { position: fixed; top: 0; left: -290px; z-index: 90; width: 280px; height: 100vh; transition: left .2s; box-shadow: var(--shadow); }
+  .question-sidebar.open { left: 0; }
+  .sidebar-backdrop { display: block; position: fixed; inset: 0; z-index: 80; background: rgba(2,6,23,.5); }
+  .mobile-only { display: inline-grid; place-items: center; }
+  .question-card { scroll-margin-top: 210px; }
+}
+
+@media (max-width: 680px) {
+  .site-header { height: 66px; padding: 0 14px; }
+  .brand small, .user-chip-copy { display: none; }
+  .view { min-height: calc(100vh - 126px); }
+  .landing-view { padding: 30px 16px 54px; }
+  .hero-copy h1 { font-size: 2.4rem; }
+  .feature-row { gap: 22px; }
+  .feature-row strong { font-size: 1.3rem; }
+  .input-row { grid-template-columns: 1fr; }
+  .payment-callout { flex-direction: column; align-items: stretch; }
+  .page-container { width: min(100% - 24px,1200px); padding-top: 24px; }
+  .dashboard-hero { align-items: flex-start; }
+  .dashboard-stat { width: 86px; height: 86px; }
+  .dashboard-stat span { font-size: 1.7rem; }
+  .dashboard-stat small { font-size: .62rem; }
+  .test-grid { grid-template-columns: 1fr; }
+  .section-heading { align-items: flex-start; }
+  .test-toolbar { top: 66px; padding: 8px 11px; gap: 8px; }
+  .test-toolbar-title strong { max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .test-toolbar > .btn-danger { min-height: 39px; padding: 0 12px; font-size: .77rem; }
+  .test-metrics > div { min-width: 0; flex: 1; padding: 7px; }
+  .questions-column { width: calc(100% - 20px); padding-top: 15px; }
+  .question-card { scroll-margin-top: 205px; }
+  .bottom-submit { flex-direction: column; align-items: stretch; }
+  .review-heading { flex-direction: column; align-items: stretch; }
+  .review-legend { flex-direction: column; gap: 8px; }
+  .modal { padding: 25px 20px; }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions .btn { width: 100%; }
+  .result-grid { grid-template-columns: repeat(2,1fr); }
+  .result-grid div:last-child { grid-column: 1 / -1; }
+}
+</style>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <button class="brand" id="brandButton" type="button" aria-label="Go to dashboard">
+        <span class="brand-mark">KA</span>
+        <span>
+          <strong id="brandName">Kaushalya Academy</strong>
+          <small>Mock Test Portal</small>
+        </span>
+      </button>
+      <div class="header-actions hidden" id="authenticatedHeader">
+        <div class="user-chip">
+          <span class="avatar" id="headerAvatar">U</span>
+          <span class="user-chip-copy">
+            <strong id="headerUserName">User</strong>
+            <small id="headerUserEmail"></small>
+          </span>
+        </div>
+        <button class="btn btn-ghost btn-small" id="logoutButton" type="button">Log out</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="view landing-view" id="landingView">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">Secure • Timed • Ranked</span>
+            <h1>Prepare smarter with 21 full-length mock tests.</h1>
+            <p>Verify your registered email, sign in with the same Google account, and start your three-hour mock test.</p>
+            <div class="feature-row">
+              <div><strong>21</strong><span>Mock Tests</span></div>
+              <div><strong>200</strong><span>MCQs per test</span></div>
+              <div><strong>3h</strong><span>Secure timer</span></div>
+            </div>
+          </div>
+
+          <div class="auth-card card">
+            <div class="card-heading">
+              <span class="step-badge">1</span>
+              <div>
+                <h2>Verify your email</h2>
+                <p>Use the same Google email that is registered after payment.</p>
+              </div>
+            </div>
+            <form id="verifyEmailForm" novalidate>
+              <label for="emailInput">Registered Gmail ID</label>
+              <div class="input-row">
+                <input id="emailInput" name="email" type="email" autocomplete="email" placeholder="name@gmail.com" required>
+                <button class="btn btn-primary" id="verifyEmailButton" type="submit">Verify</button>
+              </div>
+            </form>
+            <div class="status-message hidden" id="emailStatus" role="status"></div>
+
+            <div class="divider"><span>then</span></div>
+
+            <button class="btn btn-google" id="googleLoginButton" type="button" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.34 2.98-7.41z"/><path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.05v2.62A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.4 13.93A6 6 0 0 1 6.08 12c0-.67.12-1.32.32-1.93V7.45H3.05A10 10 0 0 0 2 12c0 1.61.38 3.14 1.05 4.55l3.35-2.62z"/><path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.95 5.45l3.35 2.62c.79-2.37 3-4.13 5.6-4.13z"/></svg>
+              Continue with Google
+            </button>
+
+            <div class="payment-callout">
+              <div>
+                <strong>Not registered yet?</strong>
+                <span>Get access to all 21 mock tests.</span>
+              </div>
+              <button class="btn btn-accent" id="openPaymentButton" type="button">Pay Now – ₹99</button>
+            </div>
+            <p class="security-note">Your answers, marks and rank are calculated securely on the server.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view hidden" id="dashboardView">
+        <div class="page-container">
+          <div class="dashboard-hero card">
+            <div>
+              <span class="eyebrow">Welcome back</span>
+              <h1 id="dashboardGreeting">Ready for your next mock test?</h1>
+              <p>Choose a test below. Your timer begins only after you confirm the instructions.</p>
+            </div>
+            <div class="dashboard-stat">
+              <span id="totalTestsCount">21</span>
+              <small>Available tests</small>
+            </div>
+          </div>
+          <div class="section-heading">
+            <div>
+              <h2>Mock Tests</h2>
+              <p>Scores and ranks appear after submission.</p>
+            </div>
+            <button class="btn btn-ghost btn-small" id="refreshDashboardButton" type="button">Refresh</button>
+          </div>
+          <div class="test-grid" id="testGrid"></div>
+          <div class="empty-state hidden" id="dashboardEmptyState">No mock tests are available.</div>
+        </div>
+      </section>
+
+      <section class="view hidden" id="testView">
+        <div class="test-toolbar">
+          <div class="test-toolbar-title">
+            <button class="icon-button" id="testMenuButton" type="button" aria-label="Toggle question navigator">☰</button>
+            <div>
+              <small>Mock Test</small>
+              <strong id="activeTestName">Mock Test</strong>
+            </div>
+          </div>
+          <div class="test-metrics">
+            <div><small>Answered</small><strong id="answeredCount">0</strong></div>
+            <div><small>Unanswered</small><strong id="unansweredCount">0</strong></div>
+            <div class="timer-box" id="timerBox"><small>Time Left</small><strong id="timerDisplay">03:00:00</strong></div>
+          </div>
+          <button class="btn btn-danger" id="submitTestButton" type="button">Submit Test</button>
+        </div>
+        <div class="test-layout">
+          <aside class="question-sidebar" id="questionSidebar">
+            <div class="sidebar-heading">
+              <strong>Questions</strong>
+              <button class="icon-button mobile-only" id="closeQuestionSidebarButton" type="button">×</button>
+            </div>
+            <div class="legend">
+              <span><i class="legend-dot answered"></i>Answered</span>
+              <span><i class="legend-dot unanswered"></i>Unanswered</span>
+            </div>
+            <div class="question-nav" id="questionNav"></div>
+          </aside>
+          <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+          <div class="questions-column">
+            <div class="test-notice">All questions are shown on this page. Your selected answers are saved on this device while the test is active.</div>
+            <div id="questionsContainer"></div>
+            <div class="bottom-submit card">
+              <div>
+                <strong>Finished reviewing your answers?</strong>
+                <span>Submission cannot be changed afterward.</span>
+              </div>
+              <button class="btn btn-danger" id="bottomSubmitButton" type="button">Submit Test</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view hidden" id="reviewView">
+        <div class="page-container review-page">
+          <div class="section-heading review-heading">
+            <div>
+              <span class="eyebrow">Answer Review</span>
+              <h1 id="reviewTestName">Mock Test Review</h1>
+              <p id="reviewSummary"></p>
+            </div>
+            <button class="btn btn-primary" id="backToDashboardButton" type="button">Back to Dashboard</button>
+          </div>
+          <div class="review-legend card">
+            <span><i class="legend-dot correct"></i>Correct answer</span>
+            <span><i class="legend-dot wrong"></i>Your wrong answer</span>
+            <span><i class="legend-dot unattempted"></i>Unattempted</span>
+          </div>
+          <div id="reviewContainer"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a href="https://kaushalyaacademy.online" target="_blank" rel="noopener noreferrer">kaushalyaacademy.online</a>
+      <span>© Kaushalya Academy • Mock Tests • MCQ Practice • Study Material</span>
+    </footer>
+  </div>
+
+  <div class="modal-backdrop hidden" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="paymentModalTitle">
+    <div class="modal card">
+      <button class="modal-close" data-close-modal="paymentModal" type="button" aria-label="Close">×</button>
+      <span class="eyebrow">One-time access</span>
+      <h2 id="paymentModalTitle">Register for all mock tests</h2>
+      <p>Enter your details exactly as you will use them for Google Sign-In.</p>
+      <form id="paymentForm" novalidate>
+        <label for="paymentName">Full Name</label>
+        <input id="paymentName" type="text" autocomplete="name" maxlength="150" required>
+        <label for="paymentEmail">Gmail ID</label>
+        <input id="paymentEmail" type="email" autocomplete="email" required>
+        <label for="paymentMobile">Mobile Number</label>
+        <input id="paymentMobile" type="tel" autocomplete="tel" placeholder="+91XXXXXXXXXX" required>
+        <button class="btn btn-accent btn-block" id="payButton" type="submit">Pay ₹99 Securely</button>
+      </form>
+      <p class="security-note">Payment is processed by Razorpay. Access is granted only after server-side verification.</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="instructionsModal" role="dialog" aria-modal="true" aria-labelledby="instructionsTitle">
+    <div class="modal card modal-wide">
+      <button class="modal-close" data-close-modal="instructionsModal" type="button" aria-label="Close">×</button>
+      <span class="eyebrow">Before you begin</span>
+      <h2 id="instructionsTitle">Mock Test Instructions</h2>
+      <div class="instruction-test-name" id="instructionTestName"></div>
+      <ul class="instruction-list">
+        <li>You will have <strong>3 hours</strong> to complete the test.</li>
+        <li>All <strong>200 questions</strong> will appear on one page.</li>
+        <li>The timer continues if you refresh or reopen the page.</li>
+        <li>Correct answers are revealed only after submission.</li>
+        <li>Do not close the browser during final submission.</li>
+      </ul>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" data-close-modal="instructionsModal" type="button">Cancel</button>
+        <button class="btn btn-primary" id="confirmStartButton" type="button">Start Mock Test</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="confirmSubmitModal" role="dialog" aria-modal="true" aria-labelledby="confirmSubmitTitle">
+    <div class="modal card modal-compact">
+      <div class="warning-icon">!</div>
+      <h2 id="confirmSubmitTitle">Submit this mock test?</h2>
+      <p id="confirmSubmitText">You will not be able to change your answers after submission.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" data-close-modal="confirmSubmitModal" type="button">Continue Test</button>
+        <button class="btn btn-danger" id="confirmSubmitButton" type="button">Submit Now</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="modal card result-modal">
+      <div class="result-trophy">★</div>
+      <span class="eyebrow">Test submitted</span>
+      <h2 id="resultTitle">Your Result</h2>
+      <p id="resultSubtitle"></p>
+      <div class="result-score">
+        <strong id="resultMarks">0/0</strong>
+        <span id="resultPercentage">0%</span>
+      </div>
+      <div class="result-grid">
+        <div><small>Rank</small><strong id="resultRank">—</strong></div>
+        <div><small>Correct</small><strong id="resultCorrect">0</strong></div>
+        <div><small>Wrong</small><strong id="resultWrong">0</strong></div>
+        <div><small>Unattempted</small><strong id="resultUnattempted">0</strong></div>
+        <div><small>Time Taken</small><strong id="resultTime">00:00:00</strong></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="closeResultButton" type="button">Close</button>
+        <button class="btn btn-primary" id="reviewAnswersButton" type="button">Review Answers</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay hidden" id="loadingOverlay" aria-live="polite">
+    <div class="spinner"></div>
+    <strong id="loadingText">Loading…</strong>
+  </div>
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
+
+/*
+ * REQUIRED: Replace this with your deployed Apps Script Web App /exec URL.
+ * Example: https://script.google.com/macros/s/AKfycb.../exec
+ */
+const APP_SETTINGS = Object.freeze({
+  APPS_SCRIPT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzdpHNx8l58WVJQdkwG0Gu9S7tAYHbjoTX4BwaT_WmTaYfTztnmmW5yi07jkJsReK0LSA/exec',
+  API_TIMEOUT_MS: 120000,
+});
+
+const state = {
+  config: null,
+  firebaseApp: null,
+  auth: null,
+  provider: null,
+  currentUser: null,
+  verifiedEmail: localStorage.getItem('mockPortalVerifiedEmail') || '',
+  dashboard: null,
+  pendingTest: null,
+  currentTest: null,
+  answers: {},
+  timerId: null,
+  serverOffsetMs: 0,
+  warningThresholdsShown: new Set(),
+  submitting: false,
+  lastResult: null,
+};
+
+const $ = id => document.getElementById(id);
+const views = ['landingView', 'dashboardView', 'testView', 'reviewView'];
+
+window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('beforeunload', event => {
+  if (state.currentTest && !state.submitting) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+});
+
+async function init() {
+  bindEvents();
+  setLoading(true, 'Preparing the portal…');
+  try {
+    const response = await serverCall('getPublicConfig');
+    state.config = response.data;
+    $('brandName').textContent = state.config.appName || 'Kaushalya Academy';
+    $('payButton').textContent = `Pay ${state.config.paymentAmountDisplay || '₹99'} Securely`;
+    $('openPaymentButton').textContent = `Pay Now – ${state.config.paymentAmountDisplay || '₹99'}`;
+    initializeFirebase();
+  } catch (error) {
+    showToast(error.message, 'error', 8000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function bindEvents() {
+  $('verifyEmailForm').addEventListener('submit', verifyEmail);
+  $('googleLoginButton').addEventListener('click', googleLogin);
+  $('openPaymentButton').addEventListener('click', () => openModal('paymentModal'));
+  $('paymentForm').addEventListener('submit', startPayment);
+  $('logoutButton').addEventListener('click', logout);
+  $('brandButton').addEventListener('click', () => {
+    if (state.currentUser) showDashboard();
+    else showView('landingView');
+  });
+  $('refreshDashboardButton').addEventListener('click', loadDashboard);
+  $('confirmStartButton').addEventListener('click', confirmStartTest);
+  $('submitTestButton').addEventListener('click', openSubmitConfirmation);
+  $('bottomSubmitButton').addEventListener('click', openSubmitConfirmation);
+  $('confirmSubmitButton').addEventListener('click', () => submitTest(false));
+  $('closeResultButton').addEventListener('click', closeResultAndDashboard);
+  $('reviewAnswersButton').addEventListener('click', () => loadReview(state.lastResult && state.lastResult.submissionId));
+  $('backToDashboardButton').addEventListener('click', showDashboard);
+  $('testMenuButton').addEventListener('click', openQuestionSidebar);
+  $('closeQuestionSidebarButton').addEventListener('click', closeQuestionSidebar);
+  $('sidebarBackdrop').addEventListener('click', closeQuestionSidebar);
+
+  document.querySelectorAll('[data-close-modal]').forEach(button => {
+    button.addEventListener('click', () => closeModal(button.dataset.closeModal));
+  });
+
+  document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    backdrop.addEventListener('click', event => {
+      if (event.target === backdrop && backdrop.id !== 'resultModal') closeModal(backdrop.id);
+    });
+  });
+}
+
+function initializeFirebase() {
+  state.firebaseApp = initializeApp(state.config.firebase);
+  state.auth = getAuth(state.firebaseApp);
+  state.provider = new GoogleAuthProvider();
+  state.provider.setCustomParameters({ prompt: 'select_account' });
+
+  setPersistence(state.auth, browserLocalPersistence).catch(() => {});
+  onAuthStateChanged(state.auth, async user => {
+    state.currentUser = user || null;
+    if (!user) {
+      updateAuthenticatedHeader(null);
+      return;
+    }
+
+    const email = normalizeEmail(user.email);
+    if (state.verifiedEmail && email === normalizeEmail(state.verifiedEmail)) {
+      try {
+        await loadDashboard();
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
+    }
+  });
+}
+
+async function verifyEmail(event) {
+  event.preventDefault();
+  const email = normalizeEmail($('emailInput').value);
+  setEmailStatus('', '');
+  setButtonBusy($('verifyEmailButton'), true, 'Verifying…');
+  try {
+    const response = await serverCall('verifyEmail', { email });
+    state.verifiedEmail = response.data.email;
+    localStorage.setItem('mockPortalVerifiedEmail', state.verifiedEmail);
+    $('emailInput').value = state.verifiedEmail;
+    $('googleLoginButton').disabled = false;
+    setEmailStatus(response.message, 'success');
+
+    if (state.currentUser && normalizeEmail(state.currentUser.email) === state.verifiedEmail) {
+      await loadDashboard();
+    }
+  } catch (error) {
+    state.verifiedEmail = '';
+    localStorage.removeItem('mockPortalVerifiedEmail');
+    $('googleLoginButton').disabled = true;
+    setEmailStatus(error.message, 'error');
+  } finally {
+    setButtonBusy($('verifyEmailButton'), false, 'Verify');
+  }
+}
+
+async function googleLogin() {
+  if (!state.verifiedEmail) {
+    showToast('Verify your registered email first.', 'error');
+    return;
+  }
+  setLoading(true, 'Opening Google Sign-In…');
+  try {
+    const credential = await signInWithPopup(state.auth, state.provider);
+    const signedInEmail = normalizeEmail(credential.user.email);
+    if (signedInEmail !== normalizeEmail(state.verifiedEmail)) {
+      await signOut(state.auth);
+      throw new Error('Please sign in with the same Google account that was verified.');
+    }
+    const idToken = await credential.user.getIdToken(true);
+    await serverCall('verifyAuthenticatedUser', {
+      idToken,
+      expectedEmail: state.verifiedEmail,
+    });
+    await loadDashboard();
+  } catch (error) {
+    const message = friendlyFirebaseError(error);
+    showToast(message, 'error', 7000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function logout() {
+  setLoading(true, 'Logging out…');
+  try {
+    if (state.currentUser) {
+      try {
+        const idToken = await state.currentUser.getIdToken();
+        await serverCall('logoutSession', { idToken, expectedEmail: state.verifiedEmail });
+      } catch (ignored) {}
+    }
+    await signOut(state.auth);
+  } finally {
+    clearTimer();
+    state.currentUser = null;
+    state.currentTest = null;
+    state.dashboard = null;
+    updateAuthenticatedHeader(null);
+    showView('landingView');
+    setLoading(false);
+    showToast('You have been logged out.', 'info');
+  }
+}
+
+async function startPayment(event) {
+  event.preventDefault();
+  const name = $('paymentName').value.trim();
+  const email = normalizeEmail($('paymentEmail').value);
+  const mobile = $('paymentMobile').value.trim();
+  setButtonBusy($('payButton'), true, 'Creating order…');
+  try {
+    const response = await serverCall('createRazorpayOrder', { name, email, mobile });
+    const order = response.data;
+    if (!window.Razorpay) throw new Error('Razorpay Checkout could not be loaded.');
+
+    const checkout = new window.Razorpay({
+      key: order.keyId,
+      amount: order.amount,
+      currency: order.currency,
+      name: order.name,
+      description: order.description,
+      order_id: order.orderId,
+      prefill: order.prefill,
+      theme: { color: '#1e3a8a' },
+      modal: {
+        ondismiss: () => showToast('Payment was cancelled. You can try again.', 'info'),
+      },
+      handler: async paymentResponse => {
+        setLoading(true, 'Verifying payment securely…');
+        try {
+          const verified = await serverCall('verifyRazorpayPayment', {
+            razorpayOrderId: paymentResponse.razorpay_order_id,
+            razorpayPaymentId: paymentResponse.razorpay_payment_id,
+            razorpaySignature: paymentResponse.razorpay_signature,
+            name,
+            email,
+            mobile,
+          });
+          closeModal('paymentModal');
+          $('paymentForm').reset();
+          $('emailInput').value = verified.data.email;
+          showToast('Payment successful. Your email is now registered.', 'success', 8000);
+          await verifyEmail(new Event('submit'));
+        } catch (error) {
+          showToast(error.message, 'error', 9000);
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+    checkout.on('payment.failed', response => {
+      const description = response && response.error && response.error.description;
+      showToast(description || 'Payment failed. Please try again.', 'error', 8000);
+    });
+    checkout.open();
+  } catch (error) {
+    showToast(error.message, 'error', 8000);
+  } finally {
+    setButtonBusy($('payButton'), false, `Pay ${state.config?.paymentAmountDisplay || '₹99'} Securely`);
+  }
+}
+
+async function loadDashboard() {
+  if (!state.currentUser) return;
+  setLoading(true, 'Loading your mock tests…');
+  try {
+    const idToken = await state.currentUser.getIdToken();
+    const response = await serverCall('getUserDashboard', {
+      idToken,
+      expectedEmail: state.verifiedEmail || state.currentUser.email,
+    });
+    state.dashboard = response.data;
+    state.verifiedEmail = normalizeEmail(response.data.user.email);
+    localStorage.setItem('mockPortalVerifiedEmail', state.verifiedEmail);
+    updateAuthenticatedHeader(response.data.user);
+    renderDashboard(response.data);
+    showView('dashboardView');
+
+    if (response.data.activeSession) {
+      showToast(`You have an active ${response.data.activeSession.testName} session.`, 'info', 5000);
+    }
+  } catch (error) {
+    if (['INVALID_AUTH_TOKEN', 'AUTH_TOKEN_REVOKED', 'AUTH_TOKEN_REQUIRED'].includes(error.code)) {
+      await signOut(state.auth).catch(() => {});
+    }
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderDashboard(data) {
+  $('dashboardGreeting').textContent = `Hello ${data.user.name || 'Learner'}, ready for your next test?`;
+  $('totalTestsCount').textContent = String(data.totalTests || 0);
+  const grid = $('testGrid');
+  grid.replaceChildren();
+  $('dashboardEmptyState').classList.toggle('hidden', Boolean(data.tests && data.tests.length));
+
+  (data.tests || []).forEach((test, index) => {
+    const card = createElement('article', 'test-card card');
+    const top = createElement('div', 'test-card-top');
+    const icon = createElement('div', 'test-icon', String(index + 1).padStart(2, '0'));
+    const status = createElement('span', `status-pill ${slug(test.status)}`, test.status);
+    top.append(icon, status);
+
+    const title = createElement('h3', '', prettifyTestName(test.name));
+    const meta = createElement('div', 'test-meta');
+    meta.append(
+      createElement('span', '', `${test.questionCount} questions`),
+      createElement('span', '', '3 hours')
+    );
+    card.append(top, title, meta);
+
+    if (test.status === 'Attempted') {
+      const previous = createElement('div', 'previous-result');
+      const score = createElement('div');
+      score.append(createElement('small', '', 'Previous score'), createElement('strong', '', `${test.previousScore}/${test.previousTotal}`));
+      const rank = createElement('div');
+      rank.append(createElement('small', '', 'Rank'), createElement('strong', '', test.previousRank ? `#${test.previousRank}` : '—'));
+      previous.append(score, rank);
+      card.append(previous);
+    }
+
+    const actions = createElement('div', 'test-card-actions');
+    if (test.submissionId) {
+      const reviewButton = createElement('button', 'btn btn-ghost', 'Review');
+      reviewButton.type = 'button';
+      reviewButton.addEventListener('click', () => loadReview(test.submissionId));
+      actions.append(reviewButton);
+    }
+
+    const actionButton = createElement('button', 'btn btn-primary');
+    actionButton.type = 'button';
+    if (test.activeSessionId) {
+      actionButton.textContent = 'Resume Test';
+      actionButton.addEventListener('click', () => loadTestSession(test.activeSessionId));
+    } else if (test.canAttempt) {
+      actionButton.textContent = 'Start Test';
+      actionButton.addEventListener('click', () => openInstructions(test));
+    } else {
+      actionButton.textContent = 'Completed';
+      actionButton.disabled = true;
+    }
+    actions.append(actionButton);
+    card.append(actions);
+    grid.append(card);
+  });
+}
+
+function openInstructions(test) {
+  state.pendingTest = test;
+  $('instructionTestName').textContent = prettifyTestName(test.name);
+  $('confirmStartButton').textContent = test.activeSessionId ? 'Resume Mock Test' : 'Start Mock Test';
+  openModal('instructionsModal');
+}
+
+async function confirmStartTest() {
+  if (!state.pendingTest || !state.currentUser) return;
+  closeModal('instructionsModal');
+  if (state.pendingTest.activeSessionId) {
+    await loadTestSession(state.pendingTest.activeSessionId);
+    return;
+  }
+
+  setLoading(true, 'Starting your mock test…');
+  try {
+    const idToken = await state.currentUser.getIdToken();
+    const response = await serverCall('startTest', {
+      idToken,
+      expectedEmail: state.verifiedEmail,
+      testName: state.pendingTest.name,
+    });
+    await loadTestSession(response.data.sessionId);
+  } catch (error) {
+    showToast(error.message, 'error', 7000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function loadTestSession(sessionId) {
+  if (!state.currentUser) return;
+  setLoading(true, 'Loading questions…');
+  try {
+    const idToken = await state.currentUser.getIdToken();
+    const response = await serverCall('getTestQuestions', {
+      idToken,
+      expectedEmail: state.verifiedEmail,
+      sessionId,
+    });
+    const data = response.data;
+    state.serverOffsetMs = new Date(data.serverTime).getTime() - Date.now();
+    state.currentTest = {
+      sessionId: data.session.sessionId,
+      testName: data.session.testName,
+      startedAt: data.session.startedAt,
+      expiresAt: data.session.expiresAt,
+      questions: data.questions,
+      totalQuestions: data.totalQuestions,
+    };
+    state.answers = readSavedAnswers();
+    state.warningThresholdsShown = new Set();
+    state.submitting = false;
+    renderTest();
+    showView('testView');
+    startTimer();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  } catch (error) {
+    showToast(error.message, 'error', 8000);
+    if (error.code === 'TIME_EXPIRED') await loadDashboard().catch(() => {});
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderTest() {
+  const test = state.currentTest;
+  $('activeTestName').textContent = prettifyTestName(test.testName);
+  const container = $('questionsContainer');
+  const nav = $('questionNav');
+  container.replaceChildren();
+  nav.replaceChildren();
+
+  test.questions.forEach(question => {
+    const card = createElement('article', 'question-card card');
+    card.id = `question-${question.number}`;
+    card.append(createElement('span', 'question-number', `Question ${question.number}`));
+    card.append(createElement('div', 'question-text', question.question));
+
+    const optionsList = createElement('div', 'options-list');
+    ['A', 'B', 'C', 'D'].forEach(letter => {
+      const label = createElement('label', 'option-label');
+      label.dataset.question = String(question.number);
+      label.dataset.answer = letter;
+      if (state.answers[String(question.number)] === letter) label.classList.add('selected');
+
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `question-${question.number}-answer`;
+      input.value = letter;
+      input.checked = state.answers[String(question.number)] === letter;
+      input.addEventListener('change', () => selectAnswer(question.number, letter, optionsList));
+
+      label.append(input, createElement('span', 'option-letter', letter), createElement('span', 'option-text', question.options[letter]));
+      optionsList.append(label);
+    });
+    card.append(optionsList);
+    container.append(card);
+
+    const navButton = createElement('button', state.answers[String(question.number)] ? 'answered' : '', String(question.number));
+    navButton.type = 'button';
+    navButton.dataset.questionNumber = String(question.number);
+    navButton.addEventListener('click', () => {
+      closeQuestionSidebar();
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    nav.append(navButton);
+  });
+  updateProgress();
+}
+
+function selectAnswer(questionNumber, answer, optionsList) {
+  state.answers[String(questionNumber)] = answer;
+  optionsList.querySelectorAll('.option-label').forEach(label => {
+    label.classList.toggle('selected', label.dataset.answer === answer);
+  });
+  saveAnswers();
+  updateProgress();
+}
+
+function updateProgress() {
+  if (!state.currentTest) return;
+  const answered = Object.values(state.answers).filter(value => ['A', 'B', 'C', 'D'].includes(value)).length;
+  const total = state.currentTest.totalQuestions;
+  $('answeredCount').textContent = String(answered);
+  $('unansweredCount').textContent = String(Math.max(0, total - answered));
+  $('questionNav').querySelectorAll('button').forEach(button => {
+    button.classList.toggle('answered', Boolean(state.answers[button.dataset.questionNumber]));
+  });
+}
+
+function startTimer() {
+  clearTimer();
+  updateTimer();
+  state.timerId = window.setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+  if (!state.currentTest) return;
+  const now = Date.now() + state.serverOffsetMs;
+  const remaining = Math.max(0, Math.floor((new Date(state.currentTest.expiresAt).getTime() - now) / 1000));
+  $('timerDisplay').textContent = formatDuration(remaining);
+  $('timerBox').classList.toggle('warning', remaining <= 1800 && remaining > 300);
+  $('timerBox').classList.toggle('danger', remaining <= 300);
+
+  const warnings = [1800, 600, 300, 60];
+  warnings.forEach(seconds => {
+    if (remaining <= seconds && remaining > Math.max(0, seconds - 2) && !state.warningThresholdsShown.has(seconds)) {
+      state.warningThresholdsShown.add(seconds);
+      showToast(`${formatFriendlyTime(seconds)} remaining.`, seconds <= 300 ? 'error' : 'info', 5000);
+    }
+  });
+
+  if (remaining <= 0 && !state.submitting) {
+    clearTimer();
+    showToast('Time is over. Your test is being submitted automatically.', 'error', 6000);
+    submitTest(true);
+  }
+}
+
+function openSubmitConfirmation() {
+  if (!state.currentTest || state.submitting) return;
+  const answered = Object.keys(state.answers).length;
+  const unattempted = state.currentTest.totalQuestions - answered;
+  $('confirmSubmitText').textContent = `${answered} answered and ${unattempted} unattempted. You cannot change answers after submission.`;
+  openModal('confirmSubmitModal');
+}
+
+async function submitTest(autoSubmit) {
+  if (!state.currentTest || state.submitting || !state.currentUser) return;
+  closeModal('confirmSubmitModal');
+  state.submitting = true;
+  setLoading(true, autoSubmit ? 'Time expired. Submitting your test…' : 'Submitting and calculating your result…');
+  try {
+    const idToken = await state.currentUser.getIdToken();
+    const idempotencyKey = getSubmissionIdempotencyKey();
+    const response = await serverCall('submitTest', {
+      idToken,
+      expectedEmail: state.verifiedEmail,
+      sessionId: state.currentTest.sessionId,
+      idempotencyKey,
+      answers: state.answers,
+    });
+    clearTimer();
+    clearSavedTestState();
+    state.lastResult = response.data;
+    state.currentTest = null;
+    state.answers = {};
+    showResult(response.data);
+  } catch (error) {
+    state.submitting = false;
+    showToast(error.message, 'error', 9000);
+    if (error.code === 'TIME_EXPIRED') {
+      clearTimer();
+      await loadDashboard().catch(() => {});
+    } else if (state.currentTest) {
+      startTimer();
+    }
+  } finally {
+    setLoading(false);
+  }
+}
+
+function showResult(result) {
+  $('resultSubtitle').textContent = `${result.name} • ${prettifyTestName(result.testName)}`;
+  $('resultMarks').textContent = `${result.marks}/${result.totalMarks}`;
+  $('resultPercentage').textContent = `${result.percentage}%`;
+  $('resultRank').textContent = result.rank ? `#${result.rank}` : '—';
+  $('resultCorrect').textContent = String(result.correct);
+  $('resultWrong').textContent = String(result.wrong);
+  $('resultUnattempted').textContent = String(result.unattempted);
+  $('resultTime').textContent = result.timeTaken;
+  openModal('resultModal');
+}
+
+async function closeResultAndDashboard() {
+  closeModal('resultModal');
+  state.submitting = false;
+  await loadDashboard().catch(error => showToast(error.message, 'error'));
+}
+
+async function loadReview(submissionId) {
+  if (!submissionId || !state.currentUser) return;
+  closeModal('resultModal');
+  setLoading(true, 'Loading answer review…');
+  try {
+    const idToken = await state.currentUser.getIdToken();
+    const response = await serverCall('getReview', {
+      idToken,
+      expectedEmail: state.verifiedEmail,
+      submissionId,
+    });
+    renderReview(response.data);
+    showView('reviewView');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (error) {
+    showToast(error.message, 'error', 8000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderReview(data) {
+  const result = data.result;
+  $('reviewTestName').textContent = `${prettifyTestName(result.testName)} Review`;
+  $('reviewSummary').textContent = `Score ${result.marks}/${result.totalMarks} • Rank ${result.rank ? `#${result.rank}` : '—'} • ${result.timeTaken}`;
+  const container = $('reviewContainer');
+  container.replaceChildren();
+
+  data.questions.forEach(item => {
+    const card = createElement('article', 'review-card card');
+    const statusClass = item.status.toLowerCase();
+    card.append(createElement('span', `review-status ${statusClass}`, item.status));
+    card.append(createElement('span', 'question-number', `Question ${item.number}`));
+    card.append(createElement('div', 'question-text', item.question));
+
+    ['A', 'B', 'C', 'D'].forEach(letter => {
+      const option = createElement('div', 'review-option');
+      const isCorrect = letter === item.correctAnswer;
+      const isSelected = letter === item.selectedAnswer;
+      if (isCorrect) option.classList.add('correct-answer');
+      if (isSelected && !isCorrect) option.classList.add('wrong-answer');
+      if (!item.selectedAnswer && isCorrect) option.classList.add('user-unattempted');
+
+      let tagText = '';
+      if (isCorrect && isSelected) tagText = 'Your answer • Correct';
+      else if (isCorrect) tagText = 'Correct answer';
+      else if (isSelected) tagText = 'Your answer';
+
+      option.append(
+        createElement('span', 'option-letter', letter),
+        createElement('span', 'option-text', item.options[letter]),
+        createElement('span', 'option-tag', tagText)
+      );
+      card.append(option);
+    });
+    container.append(card);
+  });
+}
+
+function showDashboard() {
+  if (state.currentUser) loadDashboard().catch(error => showToast(error.message, 'error'));
+  else showView('landingView');
+}
+
+function updateAuthenticatedHeader(user) {
+  $('authenticatedHeader').classList.toggle('hidden', !user);
+  if (!user) return;
+  $('headerUserName').textContent = user.name || 'User';
+  $('headerUserEmail').textContent = user.email || '';
+  $('headerAvatar').textContent = (user.name || user.email || 'U').trim().charAt(0).toUpperCase();
+}
+
+function showView(viewId) {
+  views.forEach(id => $(id).classList.toggle('hidden', id !== viewId));
+  if (viewId !== 'testView') closeQuestionSidebar();
+}
+
+function openQuestionSidebar() {
+  $('questionSidebar').classList.add('open');
+  $('sidebarBackdrop').classList.remove('hidden');
+}
+
+function closeQuestionSidebar() {
+  $('questionSidebar').classList.remove('open');
+  $('sidebarBackdrop').classList.add('hidden');
+}
+
+function openModal(id) {
+  $(id).classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  $(id).classList.add('hidden');
+  const anotherOpen = Array.from(document.querySelectorAll('.modal-backdrop')).some(modal => !modal.classList.contains('hidden'));
+  if (!anotherOpen) document.body.style.overflow = '';
+}
+
+function setLoading(show, text) {
+  $('loadingText').textContent = text || 'Loading…';
+  $('loadingOverlay').classList.toggle('hidden', !show);
+}
+
+function setButtonBusy(button, busy, text) {
+  button.disabled = busy;
+  button.textContent = text;
+}
+
+function setEmailStatus(message, type) {
+  const status = $('emailStatus');
+  status.textContent = message || '';
+  status.className = `status-message ${type || ''}`.trim();
+  status.classList.toggle('hidden', !message);
+}
+
+function showToast(message, type = 'info', duration = 4500) {
+  const toast = createElement('div', `toast ${type}`, message);
+  $('toastContainer').append(toast);
+  window.setTimeout(() => toast.remove(), duration);
+}
+
+function serverCall(action, payload = {}) {
+  return new Promise((resolve, reject) => {
+    const apiUrl = String(APP_SETTINGS.APPS_SCRIPT_WEB_APP_URL || '').trim();
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(apiUrl)) {
+      reject(new ApiError(
+        'API_URL_NOT_CONFIGURED',
+        'Apps Script API URL is not configured in index.html.'
+      ));
+      return;
+    }
+
+    const requestId = window.crypto?.randomUUID?.()
+      || `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const frameName = `mock_api_${requestId.replace(/[^a-zA-Z0-9_]/g, '')}`;
+    const frame = document.createElement('iframe');
+    frame.name = frameName;
+    frame.id = frameName;
+    frame.hidden = true;
+    frame.setAttribute('aria-hidden', 'true');
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = apiUrl;
+    form.target = frameName;
+    form.hidden = true;
+    form.acceptCharset = 'UTF-8';
+
+    const fields = {
+      transport: 'iframe',
+      requestId,
+      origin: window.location.origin,
+      action,
+      payload: JSON.stringify(payload || {}),
+    };
+
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    let settled = false;
+    const cleanup = () => {
+      window.removeEventListener('message', onMessage);
+      window.clearTimeout(timeoutId);
+      form.remove();
+      frame.remove();
+    };
+
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback(value);
+    };
+
+    const onMessage = event => {
+      if (event.source !== frame.contentWindow) return;
+      const message = event.data;
+      if (!message || message.channel !== 'MOCKTEST_API' || message.requestId !== requestId) return;
+
+      const response = message.response;
+      if (response && response.success) {
+        finish(resolve, response);
+      } else {
+        finish(
+          reject,
+          new ApiError(
+            response?.errorCode || 'ERROR',
+            response?.message || 'Operation failed.'
+          )
+        );
+      }
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      finish(
+        reject,
+        new ApiError(
+          'SERVER_TIMEOUT',
+          'The server did not respond. Check the Apps Script deployment URL and allowed frontend origin.'
+        )
+      );
+    }, Number(APP_SETTINGS.API_TIMEOUT_MS) || 120000);
+
+    window.addEventListener('message', onMessage);
+    document.body.append(frame, form);
+    form.submit();
+  });
+}
+
+class ApiError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+}
+
+function createElement(tag, className = '', text = '') {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined && text !== null && text !== '') element.textContent = String(text);
+  return element;
+}
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function prettifyTestName(name) {
+  const value = String(name || '').trim();
+  const match = value.match(/^mock\s*(\d+)$/i);
+  return match ? `Mock Test ${match[1]}` : value;
+}
+
+function slug(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function formatDuration(seconds) {
+  seconds = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return [hours, minutes, secs].map(value => String(value).padStart(2, '0')).join(':');
+}
+
+function formatFriendlyTime(seconds) {
+  if (seconds >= 3600) return `${Math.round(seconds / 3600)} hour`;
+  if (seconds >= 60) return `${Math.round(seconds / 60)} minute${seconds === 60 ? '' : 's'}`;
+  return `${seconds} seconds`;
+}
+
+function answerStorageKey() {
+  if (!state.currentTest) return '';
+  return `mockPortalAnswers:${state.verifiedEmail}:${state.currentTest.sessionId}`;
+}
+
+function idempotencyStorageKey() {
+  if (!state.currentTest) return '';
+  return `mockPortalSubmitKey:${state.verifiedEmail}:${state.currentTest.sessionId}`;
+}
+
+function readSavedAnswers() {
+  try {
+    const raw = localStorage.getItem(answerStorageKey());
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveAnswers() {
+  try { localStorage.setItem(answerStorageKey(), JSON.stringify(state.answers)); } catch (ignored) {}
+}
+
+function getSubmissionIdempotencyKey() {
+  const keyName = idempotencyStorageKey();
+  let value = localStorage.getItem(keyName);
+  if (!value) {
+    value = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    localStorage.setItem(keyName, value);
+  }
+  return value;
+}
+
+function clearSavedTestState() {
+  try {
+    localStorage.removeItem(answerStorageKey());
+    localStorage.removeItem(idempotencyStorageKey());
+  } catch (ignored) {}
+}
+
+function clearTimer() {
+  if (state.timerId) window.clearInterval(state.timerId);
+  state.timerId = null;
+}
+
+function friendlyFirebaseError(error) {
+  const code = error?.code || '';
+  const messages = {
+    'auth/popup-closed-by-user': 'Google Sign-In was closed before completion.',
+    'auth/popup-blocked': 'Your browser blocked the sign-in popup. Allow popups and try again.',
+    'auth/cancelled-popup-request': 'Another sign-in request is already open.',
+    'auth/network-request-failed': 'Network error during Google Sign-In. Please try again.',
+    'auth/unauthorized-domain': 'This web-app domain is not authorized in Firebase Authentication.',
+  };
+  return messages[code] || error?.message || 'Google Sign-In failed. Please try again.';
+}
+</script>
+
+</body>
+</html>
