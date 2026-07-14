@@ -584,7 +584,7 @@ import {
  */
 const APP_SETTINGS = Object.freeze({
   APPS_SCRIPT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzdpHNx8l58WVJQdkwG0Gu9S7tAYHbjoTX4BwaT_WmTaYfTztnmmW5yi07jkJsReK0LSA/exec',
-  API_TIMEOUT_MS: 120000,
+  API_TIMEOUT_MS: 30000,
 });
 
 const state = {
@@ -627,7 +627,12 @@ async function init() {
     $('openPaymentButton').textContent = `Pay Now – ${state.config.paymentAmountDisplay || '₹99'}`;
     initializeFirebase();
   } catch (error) {
-    showToast(error.message, 'error', 8000);
+    console.error('Portal initialization failed:', error);
+    setEmailStatus(
+      `${error.message} Check the Apps Script deployment version and ALLOWED_FRONTEND_ORIGINS.`,
+      'error'
+    );
+    showToast(error.message, 'error', 10000);
   } finally {
     setLoading(false);
   }
@@ -1313,7 +1318,10 @@ function serverCall(action, payload = {}) {
     };
 
     const onMessage = event => {
-      if (event.source !== frame.contentWindow) return;
+      // Apps Script HtmlService runs the response inside its own sandboxed
+      // iframe. Therefore event.source may be the inner Apps Script frame,
+      // not the iframe element created above. The cryptographically-random
+      // requestId is used to match the response to this exact request.
       const message = event.data;
       if (!message || message.channel !== 'MOCKTEST_API' || message.requestId !== requestId) return;
 
