@@ -230,6 +230,89 @@ input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(59,130,2
 .review-option.user-unattempted { background: var(--slate-100); }
 .option-tag { font-size: .68rem; font-weight: 800; color: var(--slate-500); }
 
+
+.leaderboard-button { white-space: nowrap; }
+.leaderboard-modal { width: min(980px, 100%); }
+.leaderboard-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-right: 34px;
+}
+.leaderboard-topline p { margin: 4px 0 0; color: var(--slate-500); }
+.leaderboard-current {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.leaderboard-current > div {
+  padding: 13px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc);
+  border: 1px solid #dbeafe;
+}
+.leaderboard-current small,
+.leaderboard-current strong { display: block; }
+.leaderboard-current small { color: var(--slate-500); font-size: .7rem; }
+.leaderboard-current strong { margin-top: 3px; color: var(--navy-900); font-size: 1.08rem; }
+.leaderboard-table-wrap {
+  max-height: min(58vh, 620px);
+  overflow: auto;
+  border: 1px solid var(--slate-200);
+  border-radius: 14px;
+}
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+  background: white;
+}
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid var(--slate-200);
+  text-align: left;
+  vertical-align: middle;
+}
+.leaderboard-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--navy-900);
+  color: white;
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.leaderboard-table tbody tr:last-child td { border-bottom: 0; }
+.leaderboard-table tbody tr.current-user { background: #eff6ff; }
+.leaderboard-rank {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: var(--slate-100);
+  color: var(--slate-700);
+  font-weight: 900;
+}
+.leaderboard-rank.top-1 { background: #fef3c7; color: #92400e; }
+.leaderboard-rank.top-2 { background: #e2e8f0; color: #334155; }
+.leaderboard-rank.top-3 { background: #ffedd5; color: #9a3412; }
+.leaderboard-name { font-weight: 800; }
+.leaderboard-you {
+  margin-left: 7px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--blue-600);
+  color: white;
+  font-size: .62rem;
+  font-weight: 800;
+}
+.leaderboard-empty { padding: 34px; text-align: center; color: var(--slate-500); }
+
 .site-footer { min-height: 60px; padding: 15px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--slate-500); font-size: .74rem; border-top: 1px solid var(--slate-200); background: white; }
 .site-footer a { color: var(--blue-600); font-weight: 750; text-decoration: none; }
 
@@ -314,6 +397,10 @@ input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(59,130,2
   .modal-actions .btn { width: 100%; }
   .result-grid { grid-template-columns: repeat(2,1fr); }
   .result-grid div:last-child { grid-column: 1 / -1; }
+  .header-actions { gap: 7px; }
+  .leaderboard-button { padding: 0 10px; font-size: .74rem; }
+  .leaderboard-current { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .leaderboard-modal { padding-inline: 14px; }
 }
 </style>
 
@@ -337,6 +424,7 @@ input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(59,130,2
             <small id="headerUserEmail"></small>
           </span>
         </div>
+        <button class="btn btn-accent btn-small leaderboard-button" id="leaderboardButton" type="button">🏆 Leaderboard</button>
         <button class="btn btn-ghost btn-small" id="logoutButton" type="button">Log out</button>
       </div>
     </header>
@@ -536,6 +624,46 @@ input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(59,130,2
     </div>
   </div>
 
+  <div class="modal-backdrop hidden" id="leaderboardModal" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle">
+    <div class="modal card leaderboard-modal">
+      <button class="modal-close" data-close-modal="leaderboardModal" type="button" aria-label="Close">×</button>
+      <div class="leaderboard-topline">
+        <div>
+          <span class="eyebrow">Overall Performance</span>
+          <h2 id="leaderboardTitle">Leaderboard</h2>
+          <p id="leaderboardSubtitle">Ranked by average percentage across all attempts.</p>
+        </div>
+      </div>
+
+      <div class="leaderboard-current hidden" id="leaderboardCurrentSummary">
+        <div><small>Your Rank</small><strong id="leaderboardMyRank">—</strong></div>
+        <div><small>Average Score</small><strong id="leaderboardMyAverage">—</strong></div>
+        <div><small>Correct Percentage</small><strong id="leaderboardMyCorrect">—</strong></div>
+        <div><small>Total Attempts</small><strong id="leaderboardMyAttempts">0</strong></div>
+      </div>
+
+      <div class="leaderboard-table-wrap">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>User</th>
+              <th>Average Score</th>
+              <th>Correct %</th>
+              <th>Total Attempts</th>
+              <th>Mock Tests Given</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+        <div class="leaderboard-empty hidden" id="leaderboardEmpty">No submitted results are available yet.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" data-close-modal="leaderboardModal" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop hidden" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="modal card result-modal">
       <div class="result-trophy">★</div>
@@ -644,6 +772,7 @@ function bindEvents() {
   $('openPaymentButton').addEventListener('click', () => openModal('paymentModal'));
   $('paymentForm').addEventListener('submit', startPayment);
   $('logoutButton').addEventListener('click', logout);
+  $('leaderboardButton').addEventListener('click', loadLeaderboard);
   $('brandButton').addEventListener('click', () => {
     if (state.currentUser) showDashboard();
     else showView('landingView');
@@ -1195,6 +1324,79 @@ function renderReview(data) {
     });
     container.append(card);
   });
+}
+
+
+async function loadLeaderboard() {
+  if (!state.currentUser) {
+    showToast('Please sign in to view the leaderboard.', 'error');
+    return;
+  }
+
+  setLoading(true, 'Loading leaderboard…');
+  try {
+    const idToken = await state.currentUser.getIdToken();
+    const response = await serverCall('getLeaderboard', {
+      idToken,
+      expectedEmail: state.verifiedEmail || state.currentUser.email,
+    });
+    renderLeaderboard(response.data);
+    openModal('leaderboardModal');
+  } catch (error) {
+    showToast(error.message, 'error', 8000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderLeaderboard(data) {
+  const entries = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+  $('leaderboardSubtitle').textContent = `${data.totalUsers || 0} users • ${data.totalAttempts || 0} total attempts • Ranked by average percentage`;
+
+  const current = data.currentUser;
+  $('leaderboardCurrentSummary').classList.toggle('hidden', !current);
+  if (current) {
+    $('leaderboardMyRank').textContent = current.rank ? `#${current.rank}` : '—';
+    $('leaderboardMyAverage').textContent = `${formatDecimal(current.averageMarks)}/${formatDecimal(current.averageTotalMarks)} (${formatDecimal(current.averagePercentage)}%)`;
+    $('leaderboardMyCorrect').textContent = `${formatDecimal(current.correctPercentage)}%`;
+    $('leaderboardMyAttempts').textContent = String(current.totalAttempts || 0);
+  }
+
+  const body = $('leaderboardBody');
+  body.replaceChildren();
+  $('leaderboardEmpty').classList.toggle('hidden', entries.length > 0);
+  document.querySelector('.leaderboard-table').classList.toggle('hidden', entries.length === 0);
+
+  entries.forEach(entry => {
+    const row = document.createElement('tr');
+    if (entry.isCurrentUser) row.classList.add('current-user');
+
+    const rankCell = document.createElement('td');
+    const rankBadge = createElement('span', `leaderboard-rank top-${entry.rank}`, String(entry.rank));
+    rankCell.append(rankBadge);
+
+    const nameCell = document.createElement('td');
+    nameCell.append(createElement('span', 'leaderboard-name', entry.name || 'Learner'));
+    if (entry.isCurrentUser) nameCell.append(createElement('span', 'leaderboard-you', 'You'));
+
+    const averageCell = createElement(
+      'td',
+      '',
+      `${formatDecimal(entry.averageMarks)}/${formatDecimal(entry.averageTotalMarks)} (${formatDecimal(entry.averagePercentage)}%)`
+    );
+    const correctCell = createElement('td', '', `${formatDecimal(entry.correctPercentage)}%`);
+    const attemptsCell = createElement('td', '', String(entry.totalAttempts || 0));
+    const testsCell = createElement('td', '', String(entry.uniqueTests || 0));
+
+    row.append(rankCell, nameCell, averageCell, correctCell, attemptsCell, testsCell);
+    body.append(row);
+  });
+}
+
+function formatDecimal(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '0';
+  return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 function showDashboard() {
