@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kaushalya Academy - PYQ Quiz</title>
   <meta name="theme-color" content="#081833" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     :root {
@@ -98,6 +97,24 @@
     .verify-btn { background: var(--primary); color: #fff; }
     .buy-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; margin-top: 12px; }
     .pay-btn { width: 100%; background: var(--green); color: #fff; margin-top: 10px; }
+    .firebase-google-btn {
+      width: 100%;
+      min-height: 50px;
+      border: 1.5px solid #d7dfeb;
+      border-radius: 14px;
+      background: #fff;
+      color: #24344e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: .16s ease;
+    }
+    .firebase-google-btn:hover:not(:disabled) { border-color: #9bb3e8; transform: translateY(-1px); box-shadow: 0 8px 22px rgba(49,101,224,.10); }
+    .firebase-google-btn:disabled { opacity: .62; cursor: not-allowed; }
+    .google-icon { width: 20px; height: 20px; flex: 0 0 auto; }
     .status-box {
       margin-top: 16px;
       padding: 13px 14px;
@@ -307,7 +324,15 @@
 
       <div id="googleLoginBox" class="google-box hidden">
         <div class="google-title">Email verified. Continue with the same Google account.</div>
-        <div id="googleButton"></div>
+        <button id="firebaseGoogleBtn" class="firebase-google-btn" type="button">
+          <svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M21.35 12.27c0-.76-.07-1.49-.2-2.2H12v4.16h5.23a4.47 4.47 0 0 1-1.94 2.93v2.7h3.14c1.84-1.69 2.92-4.19 2.92-7.59Z"/>
+            <path fill="#34A853" d="M12 21.75c2.63 0 4.83-.87 6.44-2.36l-3.14-2.7c-.87.58-1.98.93-3.3.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.79A9.73 9.73 0 0 0 12 21.75Z"/>
+            <path fill="#FBBC05" d="M6.54 13.59A5.84 5.84 0 0 1 6.23 12c0-.55.1-1.08.31-1.59V7.62H3.3A9.72 9.72 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.38l3.24-2.79Z"/>
+            <path fill="#EA4335" d="M12 6.38c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.82 3.47 14.62 2.5 12 2.5a9.73 9.73 0 0 0-8.7 5.12l3.24 2.79C7.31 8.1 9.46 6.38 12 6.38Z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
       </div>
 
       <div class="secure-note">Secure payment by Razorpay • Access verified through Google</div>
@@ -382,11 +407,50 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
     "use strict";
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbzgjLvgyn9acwewbEfjMhtyTmD9HHtJ0wsfIfOwxb1FxvyzA_c3tffSzNvcLeZfKwYr/exec";
-    const SESSION_KEY = "kaushalya_pyq_session";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut as firebaseSignOut,
+      setPersistence,
+      browserSessionPersistence
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+    /*
+      FIREBASE SETUP:
+      Firebase Console → Project settings → General → Your apps → Web app
+      Replace every value below with the config shown by Firebase.
+      measurementId is not required for login.
+    */
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAdJ0Ppj_OyRHjlFCWRMNHAZhsOU5Pk194",
+  authDomain: "pyqs-aa3e4.firebaseapp.com",
+  projectId: "pyqs-aa3e4",
+  storageBucket: "pyqs-aa3e4.firebasestorage.app",
+  messagingSenderId: "526779750085",
+  appId: "1:526779750085:web:4320c87b47fd6459d342ac",
+  measurementId: "G-V12R5HHWRQ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+    // After redeploying Code.gs, paste the latest Apps Script /exec URL here if it changed.
+    const API_URL = "https://script.google.com/macros/s/AKfycbwkSvCq4J0ewONHIy9eyPja177rZmGUEL_-BEn7g7AA7j9TrhljAOzmTB0p0F6ZSubvag/exec";
+    const SESSION_KEY = "kaushalya_pyq_firebase_session";
     const LETTERS = ["A", "B", "C", "D", "E"];
 
     const accessGate = document.getElementById("accessGate");
@@ -399,7 +463,7 @@
     const paymentEmail = document.getElementById("paymentEmail");
     const payNowBtn = document.getElementById("payNowBtn");
     const googleLoginBox = document.getElementById("googleLoginBox");
-    const googleButton = document.getElementById("googleButton");
+    const firebaseGoogleBtn = document.getElementById("firebaseGoogleBtn");
 
     const loadingBox = document.getElementById("loadingBox");
     const errorBox = document.getElementById("errorBox");
@@ -421,8 +485,9 @@
     const logoutBtn = document.getElementById("logoutBtn");
     const topbarTitle = document.getElementById("topbarTitle");
 
+    let firebaseApp = null;
+    let firebaseAuth = null;
     let pendingEmail = "";
-    let googleClientId = "";
     let sessionToken = "";
     let chapters = [];
     let questionsBySheet = {};
@@ -455,7 +520,29 @@
 
     function setButtonBusy(button, busy, busyText, normalText) {
       button.disabled = busy;
-      button.textContent = busy ? busyText : normalText;
+      const label = button.querySelector("span");
+      if (label) label.textContent = busy ? busyText : normalText;
+      else button.textContent = busy ? busyText : normalText;
+    }
+
+    function firebaseConfigIsComplete() {
+      const required = ["apiKey", "authDomain", "projectId", "appId"];
+      return required.every((key) => {
+        const value = clean(FIREBASE_CONFIG[key]);
+        return value && !/PASTE_|YOUR_/i.test(value);
+      });
+    }
+
+    async function ensureFirebase() {
+      if (firebaseAuth) return firebaseAuth;
+      if (!firebaseConfigIsComplete()) {
+        throw new Error("Firebase config HTML me paste nahi ki gayi. FIREBASE_CONFIG section update karein.");
+      }
+      firebaseApp = initializeApp(FIREBASE_CONFIG);
+      firebaseAuth = getAuth(firebaseApp);
+      firebaseAuth.useDeviceLanguage();
+      await setPersistence(firebaseAuth, browserSessionPersistence);
+      return firebaseAuth;
     }
 
     function apiRequest(action, params = {}, timeoutMs = 25000) {
@@ -467,7 +554,7 @@
 
         const timeoutId = setTimeout(() => {
           cleanup();
-          reject(new Error("Request timeout. Check the Apps Script deployment and internet connection."));
+          reject(new Error("Request timeout. Apps Script deployment aur internet connection check karein."));
         }, timeoutMs);
 
         function cleanup() {
@@ -487,7 +574,7 @@
 
         script.onerror = () => {
           cleanup();
-          reject(new Error("Unable to connect to the Google Apps Script Web App."));
+          reject(new Error("Google Apps Script Web App se connection nahi ho saka."));
         };
 
         document.body.appendChild(script);
@@ -511,12 +598,11 @@
 
       try {
         const response = await apiRequest("verifyEmail", { email });
-        googleClientId = clean(response.googleClientId);
         if (response.verified) {
-          setAccessStatus("Email verified. Please continue with Google login.", "success");
+          setAccessStatus("Email verified. Same Google account se login karein.", "success");
           showGoogleLogin();
         } else {
-          setAccessStatus("Email not verified. Buy access for only ₹39.", "error");
+          setAccessStatus("Email not verified. ₹39 me access buy karein.", "error");
           buyNowBtn.classList.remove("hidden");
         }
       } catch (error) {
@@ -526,56 +612,62 @@
       }
     }
 
-    function waitForGoogleLibrary(attempt = 0) {
-      if (window.google && google.accounts && google.accounts.id) return Promise.resolve();
-      if (attempt >= 30) return Promise.reject(new Error("Google login library could not load."));
-      return new Promise((resolve) => setTimeout(resolve, 200)).then(() => waitForGoogleLibrary(attempt + 1));
-    }
-
-    async function showGoogleLogin() {
-      if (!googleClientId) {
-        setAccessStatus("Google Client ID is not configured in Apps Script properties.", "error");
-        return;
-      }
+    function showGoogleLogin() {
       googleLoginBox.classList.remove("hidden");
-      googleButton.innerHTML = "";
-      try {
-        await waitForGoogleLibrary();
-        google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleGoogleCredential,
-          auto_select: false,
-          cancel_on_tap_outside: true
-        });
-        google.accounts.id.renderButton(googleButton, {
-          theme: "outline",
-          size: "large",
-          width: Math.min(410, googleButton.clientWidth || 410),
-          text: "continue_with",
-          shape: "pill"
-        });
-      } catch (error) {
-        setAccessStatus(error.message, "error");
-      }
     }
 
-    async function handleGoogleCredential(googleResponse) {
-      if (!googleResponse || !googleResponse.credential) {
-        setAccessStatus("Google login did not return a valid credential.", "error");
+    function friendlyFirebaseError(error) {
+      const code = clean(error && error.code);
+      if (code === "auth/popup-closed-by-user") return "Google login window close ho gayi. Dobara try karein.";
+      if (code === "auth/popup-blocked") return "Browser ne login popup block kiya. Popups allow karke dobara try karein.";
+      if (code === "auth/unauthorized-domain") return "Ye website domain Firebase Authorized domains me add nahi hai.";
+      if (code === "auth/cancelled-popup-request") return "Ek login request already open hai.";
+      if (code === "auth/network-request-failed") return "Firebase network error. Internet connection check karein.";
+      return clean(error && error.message) || "Firebase Google login failed.";
+    }
+
+    async function loginWithFirebaseGoogle() {
+      const email = normalizeEmail(pendingEmail || accessEmail.value);
+      if (!validEmail(email)) {
+        setAccessStatus("Pehle registered email submit aur verify karein.", "error");
         return;
       }
-      setAccessStatus("Verifying Google account...", "info");
+
+      setButtonBusy(firebaseGoogleBtn, true, "Opening Google...", "Continue with Google");
+      setAccessStatus("Google login open ho raha hai...", "info");
+
       try {
-        const response = await apiRequest("googleLogin", {
-          email: pendingEmail,
-          credential: googleResponse.credential
-        }, 30000);
+        const auth = await ensureFirebase();
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account", login_hint: email });
+
+        const result = await signInWithPopup(auth, provider);
+        const signedInEmail = normalizeEmail(result.user && result.user.email);
+
+        if (!signedInEmail || signedInEmail !== email) {
+          await firebaseSignOut(auth);
+          throw new Error("Aapne doosra Google account select kiya. " + email + " account se login karein.");
+        }
+        if (!result.user.emailVerified) {
+          await firebaseSignOut(auth);
+          throw new Error("Google account email verified nahi hai.");
+        }
+
+        setAccessStatus("Firebase account verify ho raha hai...", "info");
+        const firebaseToken = await result.user.getIdToken(true);
+        const response = await apiRequest("firebaseLogin", {
+          email,
+          firebaseToken
+        }, 35000);
+
         sessionToken = clean(response.sessionToken);
-        if (!sessionToken) throw new Error("Session token was not created.");
+        if (!sessionToken) throw new Error("Server session create nahi hui.");
         sessionStorage.setItem(SESSION_KEY, sessionToken);
         await openQuizPortal();
       } catch (error) {
-        setAccessStatus(error.message, "error");
+        setAccessStatus(friendlyFirebaseError(error), "error");
+      } finally {
+        setButtonBusy(firebaseGoogleBtn, false, "Opening Google...", "Continue with Google");
       }
     }
 
@@ -589,7 +681,7 @@
     async function startPayment() {
       const email = normalizeEmail(paymentEmail.value);
       if (!validEmail(email)) {
-        setAccessStatus("Please enter a valid email ID for payment access.", "error");
+        setAccessStatus("Payment access ke liye valid email ID enter karein.", "error");
         return;
       }
       pendingEmail = email;
@@ -599,17 +691,21 @@
       try {
         const order = await apiRequest("createOrder", { email }, 30000);
         if (order.alreadyVerified) {
-          googleClientId = clean(order.googleClientId);
-          setAccessStatus("This email is already verified. Continue with Google login.", "success");
+          setAccessStatus("Ye email already verified hai. Google login continue karein.", "success");
           purchaseBox.classList.add("hidden");
           showGoogleLogin();
           return;
         }
-        if (!window.Razorpay) throw new Error("Razorpay checkout could not load.");
+
+        const razorpayKey = clean(order.keyId || order.key);
+        if (!razorpayKey) {
+          throw new Error("Razorpay Key ID backend se nahi mili. RAZORPAY_KEY_ID Script Property aur latest deployment check karein.");
+        }
+        if (!window.Razorpay) throw new Error("Razorpay checkout load nahi hua.");
 
         const checkout = new Razorpay({
-          key: order.keyId,
-          amount: order.amount,
+          key: razorpayKey,
+          amount: Number(order.amount),
           currency: order.currency || "INR",
           name: "Kaushalya Academy",
           description: "Chapter-wise PYQ Access",
@@ -618,29 +714,29 @@
           notes: { email },
           theme: { color: "#3165e0" },
           handler: async function (paymentResult) {
-            setAccessStatus("Payment received. Verifying and activating access...", "info");
+            setAccessStatus("Payment received. Access activate ho raha hai...", "info");
             try {
-              const verified = await apiRequest("verifyPayment", {
+              await apiRequest("verifyPayment", {
                 email,
                 razorpay_payment_id: paymentResult.razorpay_payment_id,
                 razorpay_order_id: paymentResult.razorpay_order_id,
                 razorpay_signature: paymentResult.razorpay_signature
               }, 35000);
-              googleClientId = clean(verified.googleClientId);
               purchaseBox.classList.add("hidden");
               buyNowBtn.classList.add("hidden");
-              setAccessStatus("Payment verified. Your email has been added. Continue with Google login.", "success");
+              setAccessStatus("Payment verified. Email add ho gayi. Google login karein.", "success");
               showGoogleLogin();
             } catch (error) {
-              setAccessStatus("Payment was made, but automatic verification failed: " + error.message, "error");
+              setAccessStatus("Payment hua, lekin automatic verification fail hui: " + error.message, "error");
             }
           },
           modal: {
             ondismiss: function () {
-              setAccessStatus("Payment window closed. You can try again whenever ready.", "info");
+              setAccessStatus("Payment window close ho gayi. Aap dobara try kar sakte hain.", "info");
             }
           }
         });
+
         checkout.on("payment.failed", function (response) {
           const message = response && response.error && response.error.description
             ? response.error.description
@@ -665,13 +761,13 @@
       try {
         const response = await apiRequest("getChapters", { token: sessionToken }, 30000);
         chapters = Array.isArray(response.chapters) ? response.chapters : [];
-        if (!chapters.length) throw new Error("No chapter sheets were found in the Index sheet.");
+        if (!chapters.length) throw new Error("Index sheet me chapter sheets nahi mili.");
         renderSidebar();
         await selectChapter(chapters[0].sheet);
       } catch (error) {
         sessionStorage.removeItem(SESSION_KEY);
         sessionToken = "";
-        const message = error && error.message ? error.message : "Unable to open the quiz portal.";
+        const message = error && error.message ? error.message : "Quiz portal open nahi hua.";
         if (/session|login|access|expired|verified/i.test(message)) {
           quizApp.classList.add("hidden");
           accessGate.classList.remove("hidden");
@@ -704,7 +800,7 @@
           const rows = Array.isArray(response.data) ? response.data : [];
           questionsBySheet[sheetName] = rows.map(mapRow).filter((q) => q.question && q.options.length >= 2);
         }
-        if (!questionsBySheet[sheetName].length) throw new Error("No valid questions were found in this chapter.");
+        if (!questionsBySheet[sheetName].length) throw new Error("Is chapter me valid questions nahi mile.");
         loadingBox.classList.add("hidden");
         quizArea.classList.remove("hidden");
         renderQuestion();
@@ -728,7 +824,7 @@
     }
 
     function mapRow(row, sourceIndex) {
-      const options = [1,2,3,4,5]
+      const options = [1, 2, 3, 4, 5]
         .map((number) => getValue(row, ["Option" + number, "Option " + number, LETTERS[number - 1]]))
         .filter((value) => value !== "");
       return {
@@ -875,19 +971,21 @@
       }
     }
 
-    function logout() {
+    async function logout() {
       sessionStorage.removeItem(SESSION_KEY);
       sessionToken = "";
       questionsBySheet = {};
       chapters = [];
       attempts.clear();
+      if (firebaseAuth) {
+        try { await firebaseSignOut(firebaseAuth); } catch (_) {}
+      }
       quizApp.classList.add("hidden");
       accessGate.classList.remove("hidden");
       googleLoginBox.classList.add("hidden");
       buyNowBtn.classList.add("hidden");
       purchaseBox.classList.add("hidden");
       clearAccessStatus();
-      if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
     }
 
     verifyEmailBtn.addEventListener("click", verifyEmail);
@@ -895,6 +993,7 @@
     buyNowBtn.addEventListener("click", openPurchaseBox);
     payNowBtn.addEventListener("click", startPayment);
     paymentEmail.addEventListener("keydown", (event) => { if (event.key === "Enter") startPayment(); });
+    firebaseGoogleBtn.addEventListener("click", loginWithFirebaseGoogle);
     menuToggle.addEventListener("click", toggleSidebar);
     sidebarClose.addEventListener("click", () => {
       if (window.innerWidth <= 1024) closeMobileSidebar();
