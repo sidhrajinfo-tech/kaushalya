@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaushalya Academy - PYQ Quiz</title>
+  <meta name="theme-color" content="#081833" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --navy: #071938;
+      --navy-soft: #0d2752;
+      --primary: #3165e0;
+      --primary-dark: #2451bd;
+      --primary-soft: #eaf1ff;
+      --text: #102039;
+      --muted: #687891;
+      --white: #ffffff;
+      --green: #10b981;
+      --green-bg: #dcfce7;
+      --red: #ef4444;
+      --red-bg: #fee2e2;
+      --amber: #f59e0b;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --sidebar-width: 315px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .hidden { display: none !important; }
+
+    /* Access gate */
+    .access-gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(49, 101, 224, 0.18), transparent 35%),
+        radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.13), transparent 36%),
+        linear-gradient(135deg, #071938, #0b2552 58%, #12346c);
+    }
+    .access-card {
+      width: min(100%, 510px);
+      background: rgba(255,255,255,0.98);
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.30);
+    }
+    .access-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary), #7398ff);
+      color: #fff;
+      font-size: 27px;
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(49,101,224,0.28);
+    }
+    .access-card h1 { margin: 0; font-size: 29px; line-height: 1.2; }
+    .access-card > p { margin: 10px 0 24px; color: var(--muted); line-height: 1.6; }
+    .field-label { display: block; margin-bottom: 8px; font-weight: 800; color: #32435e; }
+    .email-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+    .email-input {
+      width: 100%;
+      height: 52px;
+      border: 1.5px solid #d4dce8;
+      border-radius: 14px;
+      padding: 0 15px;
+      outline: none;
+      color: var(--text);
+      background: #fff;
+    }
+    .email-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(49,101,224,0.10); }
+    .access-btn {
+      min-height: 52px;
+      border: 0;
+      border-radius: 14px;
+      padding: 0 20px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+    .access-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .access-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .verify-btn { background: var(--primary); color: #fff; }
+    .buy-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; margin-top: 12px; }
+    .pay-btn { width: 100%; background: var(--green); color: #fff; margin-top: 10px; }
+    .status-box {
+      margin-top: 16px;
+      padding: 13px 14px;
+      border-radius: 13px;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+    .status-info { background: var(--primary-soft); color: #234b9a; }
+    .status-success { background: var(--green-bg); color: #14633c; }
+    .status-error { background: var(--red-bg); color: #991b1b; }
+    .purchase-box {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid #f7cf85;
+      background: #fff9ec;
+      border-radius: 16px;
+    }
+    .purchase-title { font-weight: 900; color: #8a4b08; margin-bottom: 10px; }
+    .price-line { color: #6b4a1d; font-size: 14px; margin: 8px 0 0; }
+    .google-box {
+      margin-top: 16px;
+      padding: 17px;
+      border-radius: 16px;
+      border: 1px solid #dbe4f0;
+      background: #f8fafc;
+    }
+    .google-title { font-weight: 850; margin-bottom: 12px; }
+    #googleButton { min-height: 44px; }
+    .secure-note { margin-top: 18px; color: #8693a6; font-size: 13px; text-align: center; }
+
+    /* Quiz shell */
+    .quiz-app { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 50;
+      width: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      background: linear-gradient(180deg, #061630 0%, #071938 100%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      transform: translateX(0);
+      transition: transform .24s ease;
+      box-shadow: 15px 0 35px rgba(3, 12, 28, 0.10);
+    }
+    body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
+    .brand {
+      padding: 23px 18px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand-title { margin: 0; font-size: 20px; font-weight: 900; color: #83a6ff; }
+    .brand-subtitle { margin: 5px 0 0; color: rgba(255,255,255,.67); font-size: 13px; }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-weight: 900;
+    }
+    .sidebar-close { background: rgba(255,255,255,.10); color: #fff; font-size: 22px; }
+    .chapter-list { padding: 14px 10px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 9px; }
+    .chapter-btn {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.075);
+      color: #fff;
+      border-radius: 14px;
+      padding: 13px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: .16s ease;
+      font-weight: 750;
+      line-height: 1.38;
+    }
+    .chapter-btn:hover { background: rgba(255,255,255,.13); }
+    .chapter-btn.active { background: var(--primary); box-shadow: 0 8px 24px rgba(49,101,224,.28); }
+    .chapter-count { opacity: .75; font-size: 12px; display: block; margin-top: 3px; }
+
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(4, 12, 28, .58);
+      opacity: 0;
+      visibility: hidden;
+      transition: .2s ease;
+    }
+    .content-shell { min-height: 100vh; margin-left: var(--sidebar-width); transition: margin-left .24s ease; }
+    body.sidebar-collapsed .content-shell { margin-left: 0; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 70px;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid #e4eaf2;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .menu-btn { background: #eaf0f8; color: #142846; font-size: 22px; }
+    .topbar-title { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .logout-btn { border: 0; background: #edf1f6; color: #42536c; padding: 10px 14px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+    .main { display: flex; justify-content: center; padding: 30px 24px 44px; }
+    .card { width: min(100%, 820px); background: #fff; border-radius: 26px; padding: 31px; box-shadow: var(--shadow); }
+    .top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
+    .progress-title { font-size: 16px; font-weight: 850; color: #52637d; }
+    .meta-line { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 11px 0 20px; font-weight: 800; }
+    .subject { color: #e83d4d; }
+    .score { color: #0aaa50; margin-left: auto; }
+    .goto-box { display: flex; align-items: center; gap: 7px; padding: 7px 9px; background: #eef2f6; border-radius: 13px; flex-shrink: 0; }
+    .goto-box label { color: #6b7a90; font-size: 13px; font-weight: 750; }
+    .goto-input { width: 58px; height: 34px; border: 1px solid #ccd6e2; border-radius: 8px; text-align: center; font-weight: 800; outline: none; }
+    .goto-btn { height: 34px; min-width: 42px; border: 0; border-radius: 8px; background: var(--navy); color: #fff; font-weight: 850; cursor: pointer; }
+    .question { margin: 0 0 25px; font-size: clamp(22px, 2.15vw, 29px); line-height: 1.43; font-weight: 850; color: #0d203d; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .options { display: grid; gap: 13px; }
+    .option { width: 100%; border: 2px solid #e2e9f2; border-radius: 17px; background: #fff; padding: 17px 18px; text-align: left; color: #102039; cursor: pointer; font-size: 16.5px; font-weight: 720; line-height: 1.5; transition: .15s ease; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .option:hover:not(:disabled) { border-color: #93aff8; transform: translateY(-1px); }
+    .option:disabled { cursor: default; }
+    .option.correct { border-color: var(--green); background: var(--green-bg); color: #14532d; }
+    .option.wrong { border-color: var(--red); background: var(--red-bg); color: #7f1d1d; }
+    .exam-card {
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 14px;
+      background: var(--primary-soft);
+      border-left: 5px solid var(--primary);
+      color: #2050ac;
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+    .btn { height: 55px; border: 0; border-radius: 15px; cursor: pointer; font-size: 17px; font-weight: 850; transition: .15s ease; }
+    .btn-secondary { background: #eef2f6; color: #718098; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+    .btn:disabled { opacity: .52; cursor: not-allowed; }
+    .footer { margin-top: 25px; border-top: 1px solid #edf1f5; padding-top: 18px; text-align: center; color: #8996a8; }
+    .footer-title { font-weight: 850; letter-spacing: .35px; margin-bottom: 5px; }
+    .footer-sub { font-size: 13px; font-weight: 700; }
+    .loader-wrap, .error-box, .empty-box { text-align: center; padding: 35px 10px; }
+    .loader { width: 46px; height: 46px; border: 4px solid #dbe6ff; border-top-color: var(--primary); border-radius: 50%; margin: 0 auto 14px; animation: spin .8s linear infinite; }
+    .error-box { color: #991b1b; background: #fff1f2; border-radius: 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .content-shell, body.sidebar-collapsed .content-shell { margin-left: 0; }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      body.sidebar-open .sidebar-backdrop { opacity: 1; visibility: visible; }
+      .main { padding: 22px 16px 38px; }
+    }
+    @media (max-width: 650px) {
+      .access-card { padding: 25px 20px; border-radius: 22px; }
+      .email-row { grid-template-columns: 1fr; }
+      .verify-btn { width: 100%; }
+      .topbar { height: 64px; padding: 0 13px; }
+      .topbar-title { font-size: 15px; }
+      .logout-btn { padding: 9px 10px; font-size: 13px; }
+      .card { padding: 20px 17px; border-radius: 21px; }
+      .top-row { flex-direction: column; }
+      .goto-box { width: 100%; justify-content: flex-end; }
+      .meta-line { align-items: flex-start; }
+      .score { margin-left: 0; width: 100%; }
+      .question { font-size: 21px; }
+      .option { padding: 15px; font-size: 15.5px; }
+      .action-row { grid-template-columns: 1fr; }
+      .sidebar { width: min(88vw, 315px); }
+    }
+  </style>
+</head>
+<body>
+  <section id="accessGate" class="access-gate">
+    <div class="access-card">
+      <div class="access-logo">K</div>
+      <h1>Kaushalya Academy PYQs</h1>
+      <p>Enter your registered email first. Google login will be available only after the email is verified in the user sheet.</p>
+
+      <label class="field-label" for="accessEmail">Enter your email ID</label>
+      <div class="email-row">
+        <input id="accessEmail" class="email-input" type="email" autocomplete="email" placeholder="name@example.com" />
+        <button id="verifyEmailBtn" class="access-btn verify-btn" type="button">Submit</button>
+      </div>
+
+      <div id="accessStatus" class="status-box status-info hidden"></div>
+
+      <button id="buyNowBtn" class="access-btn buy-btn hidden" type="button">Buy Now — Only ₹39</button>
+
+      <div id="purchaseBox" class="purchase-box hidden">
+        <div class="purchase-title">Unlock all PYQs for ₹39</div>
+        <label class="field-label" for="paymentEmail">Email ID for access</label>
+        <input id="paymentEmail" class="email-input" type="email" autocomplete="email" placeholder="name@example.com" />
+        <button id="payNowBtn" class="access-btn pay-btn" type="button">Pay ₹39 with Razorpay</button>
+        <p class="price-line">After verified payment, this email is automatically added to the <strong>user</strong> sheet.</p>
+      </div>
+
+      <div id="googleLoginBox" class="google-box hidden">
+        <div class="google-title">Email verified. Continue with the same Google account.</div>
+        <div id="googleButton"></div>
+      </div>
+
+      <div class="secure-note">Secure payment by Razorpay • Access verified through Google</div>
+    </div>
+  </section>
+
+  <div id="quizApp" class="quiz-app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-row">
+          <div>
+            <h1 class="brand-title">Kaushalya Academy</h1>
+            <p class="brand-subtitle">Chapter-wise PYQ Practice</p>
+          </div>
+          <button id="sidebarClose" class="icon-btn sidebar-close" type="button" aria-label="Hide sidebar">×</button>
+        </div>
+      </div>
+      <div id="chapterList" class="chapter-list">
+        <div class="loader-wrap"><div class="loader"></div>Loading chapters...</div>
+      </div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <div class="content-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menuToggle" class="icon-btn menu-btn" type="button" aria-label="Open or hide sidebar">☰</button>
+          <div id="topbarTitle" class="topbar-title">PYQ Practice Portal</div>
+        </div>
+        <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
+      </header>
+
+      <main class="main">
+        <section class="card">
+          <div id="loadingBox" class="loader-wrap"><div class="loader"></div>Loading questions...</div>
+          <div id="errorBox" class="error-box hidden"></div>
+
+          <div id="quizArea" class="hidden">
+            <div class="top-row">
+              <div id="questionCounter" class="progress-title">Question 1/1</div>
+              <div class="goto-box">
+                <label for="gotoInput">Go to:</label>
+                <input id="gotoInput" class="goto-input" type="number" min="1" value="1" />
+                <button id="gotoBtn" class="goto-btn" type="button">Go</button>
+              </div>
+            </div>
+
+            <div class="meta-line">
+              <span id="subjectLine" class="subject">Subject: -</span>
+              <span id="scoreLine" class="score">Score: 0</span>
+            </div>
+
+            <h2 id="questionText" class="question"></h2>
+            <div id="optionsBox" class="options"></div>
+
+            <!-- Exam name intentionally appears below all available options. -->
+            <div id="examLine" class="exam-card">Exam Name: -</div>
+
+            <div class="action-row">
+              <button id="prevBtn" class="btn btn-secondary" type="button">← Previous</button>
+              <button id="nextBtn" class="btn btn-primary" type="button">Next →</button>
+            </div>
+
+            <div class="footer">
+              <div class="footer-title">MADE BY - KAUSHALYA ACADEMY</div>
+              <div class="footer-sub">PYQ • Mock Test • MCQ Practice</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwkSvCq4J0ewONHIy9eyPja177rZmGUEL_-BEn7g7AA7j9TrhljAOzmTB0p0F6ZSubvag/exec";
+    const SESSION_KEY = "kaushalya_pyq_session";
+    const LETTERS = ["A", "B", "C", "D", "E"];
+
+    const accessGate = document.getElementById("accessGate");
+    const quizApp = document.getElementById("quizApp");
+    const accessEmail = document.getElementById("accessEmail");
+    const verifyEmailBtn = document.getElementById("verifyEmailBtn");
+    const accessStatus = document.getElementById("accessStatus");
+    const buyNowBtn = document.getElementById("buyNowBtn");
+    const purchaseBox = document.getElementById("purchaseBox");
+    const paymentEmail = document.getElementById("paymentEmail");
+    const payNowBtn = document.getElementById("payNowBtn");
+    const googleLoginBox = document.getElementById("googleLoginBox");
+    const googleButton = document.getElementById("googleButton");
+
+    const loadingBox = document.getElementById("loadingBox");
+    const errorBox = document.getElementById("errorBox");
+    const quizArea = document.getElementById("quizArea");
+    const chapterList = document.getElementById("chapterList");
+    const questionCounter = document.getElementById("questionCounter");
+    const subjectLine = document.getElementById("subjectLine");
+    const examLine = document.getElementById("examLine");
+    const scoreLine = document.getElementById("scoreLine");
+    const questionText = document.getElementById("questionText");
+    const optionsBox = document.getElementById("optionsBox");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const gotoInput = document.getElementById("gotoInput");
+    const gotoBtn = document.getElementById("gotoBtn");
+    const menuToggle = document.getElementById("menuToggle");
+    const sidebarClose = document.getElementById("sidebarClose");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const topbarTitle = document.getElementById("topbarTitle");
+
+    let pendingEmail = "";
+    let googleClientId = "";
+    let sessionToken = "";
+    let chapters = [];
+    let questionsBySheet = {};
+    let currentSheet = "";
+    let currentQuestionIndex = 0;
+    const attempts = new Map();
+
+    function clean(value) {
+      return value == null ? "" : String(value).trim();
+    }
+
+    function normalizeEmail(value) {
+      return clean(value).toLowerCase();
+    }
+
+    function validEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
+    }
+
+    function setAccessStatus(message, type = "info") {
+      accessStatus.textContent = message;
+      accessStatus.className = "status-box status-" + type;
+      accessStatus.classList.remove("hidden");
+    }
+
+    function clearAccessStatus() {
+      accessStatus.classList.add("hidden");
+      accessStatus.textContent = "";
+    }
+
+    function setButtonBusy(button, busy, busyText, normalText) {
+      button.disabled = busy;
+      button.textContent = busy ? busyText : normalText;
+    }
+
+    function apiRequest(action, params = {}, timeoutMs = 25000) {
+      return new Promise((resolve, reject) => {
+        const callbackName = "kaushalyaCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+        const script = document.createElement("script");
+        const query = new URLSearchParams({ action, callback: callbackName, _: String(Date.now()), ...params });
+        script.src = API_URL + "?" + query.toString();
+
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error("Request timeout. Check the Apps Script deployment and internet connection."));
+        }, timeoutMs);
+
+        function cleanup() {
+          clearTimeout(timeoutId);
+          try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = (response) => {
+          cleanup();
+          if (!response || response.success !== true) {
+            reject(new Error(response && response.message ? response.message : "Invalid server response."));
+            return;
+          }
+          resolve(response);
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("Unable to connect to the Google Apps Script Web App."));
+        };
+
+        document.body.appendChild(script);
+      });
+    }
+
+    async function verifyEmail() {
+      const email = normalizeEmail(accessEmail.value);
+      if (!validEmail(email)) {
+        setAccessStatus("Please enter a valid email ID.", "error");
+        return;
+      }
+
+      pendingEmail = email;
+      paymentEmail.value = email;
+      purchaseBox.classList.add("hidden");
+      buyNowBtn.classList.add("hidden");
+      googleLoginBox.classList.add("hidden");
+      clearAccessStatus();
+      setButtonBusy(verifyEmailBtn, true, "Checking...", "Submit");
+
+      try {
+        const response = await apiRequest("verifyEmail", { email });
+        googleClientId = clean(response.googleClientId);
+        if (response.verified) {
+          setAccessStatus("Email verified. Please continue with Google login.", "success");
+          showGoogleLogin();
+        } else {
+          setAccessStatus("Email not verified. Buy access for only ₹39.", "error");
+          buyNowBtn.classList.remove("hidden");
+        }
+      } catch (error) {
+        setAccessStatus(error.message, "error");
+      } finally {
+        setButtonBusy(verifyEmailBtn, false, "Checking...", "Submit");
+      }
+    }
+
+    function waitForGoogleLibrary(attempt = 0) {
+      if (window.google && google.accounts && google.accounts.id) return Promise.resolve();
+      if (attempt >= 30) return Promise.reject(new Error("Google login library could not load."));
+      return new Promise((resolve) => setTimeout(resolve, 200)).then(() => waitForGoogleLibrary(attempt + 1));
+    }
+
+    async function showGoogleLogin() {
+      if (!googleClientId) {
+        setAccessStatus("Google Client ID is not configured in Apps Script properties.", "error");
+        return;
+      }
+      googleLoginBox.classList.remove("hidden");
+      googleButton.innerHTML = "";
+      try {
+        await waitForGoogleLibrary();
+        google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+        google.accounts.id.renderButton(googleButton, {
+          theme: "outline",
+          size: "large",
+          width: Math.min(410, googleButton.clientWidth || 410),
+          text: "continue_with",
+          shape: "pill"
+        });
+      } catch (error) {
+        setAccessStatus(error.message, "error");
+      }
+    }
+
+    async function handleGoogleCredential(googleResponse) {
+      if (!googleResponse || !googleResponse.credential) {
+        setAccessStatus("Google login did not return a valid credential.", "error");
+        return;
+      }
+      setAccessStatus("Verifying Google account...", "info");
+      try {
+        const response = await apiRequest("googleLogin", {
+          email: pendingEmail,
+          credential: googleResponse.credential
+        }, 30000);
+        sessionToken = clean(response.sessionToken);
+        if (!sessionToken) throw new Error("Session token was not created.");
+        sessionStorage.setItem(SESSION_KEY, sessionToken);
+        await openQuizPortal();
+      } catch (error) {
+        setAccessStatus(error.message, "error");
+      }
+    }
+
+    function openPurchaseBox() {
+      const email = normalizeEmail(accessEmail.value || pendingEmail);
+      paymentEmail.value = email;
+      purchaseBox.classList.remove("hidden");
+      purchaseBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    async function startPayment() {
+      const email = normalizeEmail(paymentEmail.value);
+      if (!validEmail(email)) {
+        setAccessStatus("Please enter a valid email ID for payment access.", "error");
+        return;
+      }
+      pendingEmail = email;
+      accessEmail.value = email;
+      setButtonBusy(payNowBtn, true, "Creating payment...", "Pay ₹39 with Razorpay");
+
+      try {
+        const order = await apiRequest("createOrder", { email }, 30000);
+        if (order.alreadyVerified) {
+          googleClientId = clean(order.googleClientId);
+          setAccessStatus("This email is already verified. Continue with Google login.", "success");
+          purchaseBox.classList.add("hidden");
+          showGoogleLogin();
+          return;
+        }
+        if (!window.Razorpay) throw new Error("Razorpay checkout could not load.");
+
+        const checkout = new Razorpay({
+          key: order.keyId,
+          amount: order.amount,
+          currency: order.currency || "INR",
+          name: "Kaushalya Academy",
+          description: "Chapter-wise PYQ Access",
+          order_id: order.orderId,
+          prefill: { email },
+          notes: { email },
+          theme: { color: "#3165e0" },
+          handler: async function (paymentResult) {
+            setAccessStatus("Payment received. Verifying and activating access...", "info");
+            try {
+              const verified = await apiRequest("verifyPayment", {
+                email,
+                razorpay_payment_id: paymentResult.razorpay_payment_id,
+                razorpay_order_id: paymentResult.razorpay_order_id,
+                razorpay_signature: paymentResult.razorpay_signature
+              }, 35000);
+              googleClientId = clean(verified.googleClientId);
+              purchaseBox.classList.add("hidden");
+              buyNowBtn.classList.add("hidden");
+              setAccessStatus("Payment verified. Your email has been added. Continue with Google login.", "success");
+              showGoogleLogin();
+            } catch (error) {
+              setAccessStatus("Payment was made, but automatic verification failed: " + error.message, "error");
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setAccessStatus("Payment window closed. You can try again whenever ready.", "info");
+            }
+          }
+        });
+        checkout.on("payment.failed", function (response) {
+          const message = response && response.error && response.error.description
+            ? response.error.description
+            : "Payment failed. Please try again.";
+          setAccessStatus(message, "error");
+        });
+        checkout.open();
+      } catch (error) {
+        setAccessStatus(error.message, "error");
+      } finally {
+        setButtonBusy(payNowBtn, false, "Creating payment...", "Pay ₹39 with Razorpay");
+      }
+    }
+
+    async function openQuizPortal() {
+      accessGate.classList.add("hidden");
+      quizApp.classList.remove("hidden");
+      loadingBox.classList.remove("hidden");
+      errorBox.classList.add("hidden");
+      quizArea.classList.add("hidden");
+
+      try {
+        const response = await apiRequest("getChapters", { token: sessionToken }, 30000);
+        chapters = Array.isArray(response.chapters) ? response.chapters : [];
+        if (!chapters.length) throw new Error("No chapter sheets were found in the Index sheet.");
+        renderSidebar();
+        await selectChapter(chapters[0].sheet);
+      } catch (error) {
+        sessionStorage.removeItem(SESSION_KEY);
+        sessionToken = "";
+        const message = error && error.message ? error.message : "Unable to open the quiz portal.";
+        if (/session|login|access|expired|verified/i.test(message)) {
+          quizApp.classList.add("hidden");
+          accessGate.classList.remove("hidden");
+          setAccessStatus(message, "error");
+        } else {
+          showQuizError(message);
+        }
+      }
+    }
+
+    function showQuizError(message) {
+      loadingBox.classList.add("hidden");
+      quizArea.classList.add("hidden");
+      errorBox.textContent = message;
+      errorBox.classList.remove("hidden");
+    }
+
+    async function selectChapter(sheetName) {
+      currentSheet = sheetName;
+      currentQuestionIndex = 0;
+      renderSidebar();
+      closeMobileSidebar();
+      loadingBox.classList.remove("hidden");
+      quizArea.classList.add("hidden");
+      errorBox.classList.add("hidden");
+
+      try {
+        if (!questionsBySheet[sheetName]) {
+          const response = await apiRequest("getQuestions", { token: sessionToken, sheet: sheetName }, 45000);
+          const rows = Array.isArray(response.data) ? response.data : [];
+          questionsBySheet[sheetName] = rows.map(mapRow).filter((q) => q.question && q.options.length >= 2);
+        }
+        if (!questionsBySheet[sheetName].length) throw new Error("No valid questions were found in this chapter.");
+        loadingBox.classList.add("hidden");
+        quizArea.classList.remove("hidden");
+        renderQuestion();
+      } catch (error) {
+        showQuizError(error.message);
+      }
+    }
+
+    function normalizeKey(value) {
+      return clean(value).toLowerCase().replace(/[^a-z0-9]/g, "");
+    }
+
+    function getValue(row, acceptedKeys) {
+      const normalized = {};
+      Object.keys(row || {}).forEach((key) => { normalized[normalizeKey(key)] = row[key]; });
+      for (const key of acceptedKeys) {
+        const value = normalized[normalizeKey(key)];
+        if (value !== undefined && value !== null) return clean(value);
+      }
+      return "";
+    }
+
+    function mapRow(row, sourceIndex) {
+      const options = [1,2,3,4,5]
+        .map((number) => getValue(row, ["Option" + number, "Option " + number, LETTERS[number - 1]]))
+        .filter((value) => value !== "");
+      return {
+        sourceIndex,
+        question: getValue(row, ["Questions", "Question", "Ques"]),
+        options,
+        exam: getValue(row, ["Exam Name", "ExamName", "Exam"]),
+        answer: getValue(row, ["Answer", "Ans", "Correct Answer", "CorrectAnswer"])
+      };
+    }
+
+    function normalizeText(value) {
+      return clean(value).toLowerCase().replace(/\s+/g, " ").replace(/^[\(\[]?[a-e1-5][\)\].:\-\s]+/i, "").trim();
+    }
+
+    function getCorrectIndex(question) {
+      const raw = clean(question.answer);
+      if (!raw) return -1;
+      const number = raw.match(/^(?:ans(?:wer)?\s*[:\-]?\s*)?(?:option\s*)?\(?([1-5])\)?(?:[\s.:)\-]|$)/i);
+      if (number) return Number(number[1]) - 1;
+      const letter = raw.match(/^(?:ans(?:wer)?\s*[:\-]?\s*)?\(?([a-e])\)?(?:[\s.:)\-]|$)/i);
+      if (letter) return letter[1].toUpperCase().charCodeAt(0) - 65;
+      const normalizedAnswer = normalizeText(raw);
+      return question.options.findIndex((option) => normalizeText(option) === normalizedAnswer);
+    }
+
+    function currentChapter() {
+      return chapters.find((chapter) => chapter.sheet === currentSheet) || { chapter: currentSheet, count: 0 };
+    }
+
+    function currentQuestions() {
+      return questionsBySheet[currentSheet] || [];
+    }
+
+    function questionId(index) {
+      return currentSheet + "::" + index;
+    }
+
+    function chapterScore() {
+      let score = 0;
+      currentQuestions().forEach((_, index) => {
+        const result = attempts.get(questionId(index));
+        if (result && result.isCorrect) score += 1;
+      });
+      return score;
+    }
+
+    function renderSidebar() {
+      chapterList.innerHTML = "";
+      chapters.forEach((chapter, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chapter-btn" + (chapter.sheet === currentSheet ? " active" : "");
+        button.innerHTML = "<span>" + (index + 1) + ". " + escapeHtml(chapter.chapter || chapter.sheet) + "</span>" +
+          "<span class=\"chapter-count\">" + Number(chapter.count || 0) + " questions</span>";
+        button.addEventListener("click", () => selectChapter(chapter.sheet));
+        chapterList.appendChild(button);
+      });
+    }
+
+    function escapeHtml(text) {
+      const element = document.createElement("div");
+      element.textContent = clean(text);
+      return element.innerHTML;
+    }
+
+    function renderQuestion() {
+      const questions = currentQuestions();
+      const q = questions[currentQuestionIndex];
+      if (!q) {
+        showQuizError("Question not found.");
+        return;
+      }
+
+      const prior = attempts.get(questionId(currentQuestionIndex));
+      const correctIndex = getCorrectIndex(q);
+      const chapter = currentChapter();
+
+      questionCounter.textContent = "Question " + (currentQuestionIndex + 1) + "/" + questions.length;
+      subjectLine.textContent = "Subject: " + (chapter.chapter || currentSheet);
+      topbarTitle.textContent = chapter.chapter || currentSheet;
+      scoreLine.textContent = "Score: " + chapterScore();
+      questionText.textContent = q.question;
+      examLine.textContent = "Exam Name: " + (q.exam || "Not provided");
+      gotoInput.max = String(questions.length);
+      gotoInput.value = String(currentQuestionIndex + 1);
+
+      optionsBox.innerHTML = "";
+      q.options.forEach((optionText, optionIndex) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "option";
+        button.textContent = optionText;
+        button.disabled = Boolean(prior);
+        if (prior) {
+          if (optionIndex === correctIndex) button.classList.add("correct");
+          if (prior.selectedIndex === optionIndex && optionIndex !== correctIndex) button.classList.add("wrong");
+        }
+        button.addEventListener("click", () => selectOption(optionIndex));
+        optionsBox.appendChild(button);
+      });
+
+      prevBtn.disabled = currentQuestionIndex === 0;
+      nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? "Finish" : "Next →";
+    }
+
+    function selectOption(selectedIndex) {
+      const id = questionId(currentQuestionIndex);
+      if (attempts.has(id)) return;
+      const q = currentQuestions()[currentQuestionIndex];
+      const correctIndex = getCorrectIndex(q);
+      attempts.set(id, { selectedIndex, isCorrect: selectedIndex === correctIndex });
+      const buttons = [...optionsBox.querySelectorAll(".option")];
+      buttons.forEach((button, index) => {
+        button.disabled = true;
+        if (index === correctIndex) button.classList.add("correct");
+        if (index === selectedIndex && index !== correctIndex) button.classList.add("wrong");
+      });
+      scoreLine.textContent = "Score: " + chapterScore();
+    }
+
+    function goToQuestion() {
+      const questions = currentQuestions();
+      const requested = Number(gotoInput.value);
+      if (!Number.isInteger(requested) || requested < 1 || requested > questions.length) {
+        alert("Enter a question number between 1 and " + questions.length + ".");
+        gotoInput.value = String(currentQuestionIndex + 1);
+        return;
+      }
+      currentQuestionIndex = requested - 1;
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function closeMobileSidebar() {
+      document.body.classList.remove("sidebar-open");
+    }
+
+    function toggleSidebar() {
+      if (window.innerWidth <= 1024) {
+        document.body.classList.toggle("sidebar-open");
+      } else {
+        document.body.classList.toggle("sidebar-collapsed");
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionToken = "";
+      questionsBySheet = {};
+      chapters = [];
+      attempts.clear();
+      quizApp.classList.add("hidden");
+      accessGate.classList.remove("hidden");
+      googleLoginBox.classList.add("hidden");
+      buyNowBtn.classList.add("hidden");
+      purchaseBox.classList.add("hidden");
+      clearAccessStatus();
+      if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+    }
+
+    verifyEmailBtn.addEventListener("click", verifyEmail);
+    accessEmail.addEventListener("keydown", (event) => { if (event.key === "Enter") verifyEmail(); });
+    buyNowBtn.addEventListener("click", openPurchaseBox);
+    payNowBtn.addEventListener("click", startPayment);
+    paymentEmail.addEventListener("keydown", (event) => { if (event.key === "Enter") startPayment(); });
+    menuToggle.addEventListener("click", toggleSidebar);
+    sidebarClose.addEventListener("click", () => {
+      if (window.innerWidth <= 1024) closeMobileSidebar();
+      else document.body.classList.add("sidebar-collapsed");
+    });
+    sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+    logoutBtn.addEventListener("click", logout);
+    gotoBtn.addEventListener("click", goToQuestion);
+    gotoInput.addEventListener("keydown", (event) => { if (event.key === "Enter") goToQuestion(); });
+    prevBtn.addEventListener("click", () => {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex -= 1;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+    nextBtn.addEventListener("click", () => {
+      const questions = currentQuestions();
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex += 1;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        alert("Chapter Complete!\nScore: " + chapterScore() + "/" + questions.length);
+      }
+    });
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 1024) document.body.classList.remove("sidebar-open");
+    });
+
+    (async function init() {
+      const saved = clean(sessionStorage.getItem(SESSION_KEY));
+      if (!saved) return;
+      sessionToken = saved;
+      try {
+        await openQuizPortal();
+      } catch (_) {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    })();
+  </script>
+</body>
+</html>
