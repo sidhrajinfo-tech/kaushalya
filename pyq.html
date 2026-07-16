@@ -823,15 +823,31 @@
     }
 
     function getCorrectIndex(question) {
-      const raw = clean(question.answer);
-      if (!raw) return -1;
-      const number = raw.match(/^(?:ans(?:wer)?\s*[:\-]?\s*)?(?:option\s*)?\(?([1-5])\)?(?:[\s.:)\-]|$)/i);
-      if (number) return Number(number[1]) - 1;
-      const letter = raw.match(/^(?:ans(?:wer)?\s*[:\-]?\s*)?\(?([a-e])\)?(?:[\s.:)\-]|$)/i);
-      if (letter) return letter[1].toUpperCase().charCodeAt(0) - 65;
-      const normalizedAnswer = normalizeText(raw);
-      return question.options.findIndex((option) => normalizeText(option) === normalizedAnswer);
+
+    const ans = String(question.answer || "").trim().toLowerCase();
+
+    if (!ans) return -1;
+
+    // Option1 / Option 1 / OPTION1
+    let match = ans.match(/^option\s*([1-5])$/i);
+    if (match) return Number(match[1]) - 1;
+
+    // 1,2,3,4,5
+    match = ans.match(/^[1-5]$/);
+    if (match) return Number(match[0]) - 1;
+
+    // A,B,C,D,E
+    match = ans.match(/^[a-e]$/i);
+    if (match) return match[0].toUpperCase().charCodeAt(0) - 65;
+
+    // Compare with actual option text
+    for (let i = 0; i < question.options.length; i++) {
+        if (question.options[i].trim().toLowerCase() === ans)
+            return i;
     }
+
+    return -1;
+}
 
     function currentChapter() {
       return chapters.find((chapter) => chapter.sheet === currentSheet) || { chapter: currentSheet, count: 0 };
@@ -914,19 +930,36 @@
     }
 
     function selectOption(selectedIndex) {
-      const id = questionId(currentQuestionIndex);
-      if (attempts.has(id)) return;
-      const q = currentQuestions()[currentQuestionIndex];
-      const correctIndex = getCorrectIndex(q);
-      attempts.set(id, { selectedIndex, isCorrect: selectedIndex === correctIndex });
-      const buttons = [...optionsBox.querySelectorAll(".option")];
-      buttons.forEach((button, index) => {
+
+    const id = questionId(currentQuestionIndex);
+
+    if (attempts.has(id)) return;
+
+    const q = currentQuestions()[currentQuestionIndex];
+    const correctIndex = getCorrectIndex(q);
+
+    attempts.set(id, {
+        selectedIndex,
+        isCorrect: selectedIndex === correctIndex
+    });
+
+    const buttons = [...optionsBox.querySelectorAll(".option")];
+
+    buttons.forEach((button, index) => {
+
         button.disabled = true;
-        if (index === correctIndex) button.classList.add("correct");
-        if (index === selectedIndex && index !== correctIndex) button.classList.add("wrong");
-      });
-      scoreLine.textContent = "Score: " + chapterScore();
-    }
+
+        if (index === correctIndex) {
+            button.classList.add("correct");
+        }
+
+        if (index === selectedIndex && selectedIndex !== correctIndex) {
+            button.classList.add("wrong");
+        }
+    });
+
+    scoreLine.textContent = "Score: " + chapterScore();
+}
 
     function goToQuestion() {
       const questions = currentQuestions();
