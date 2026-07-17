@@ -245,6 +245,17 @@
     .option:disabled { cursor: default; }
     .option.correct { border-color: var(--green); background: var(--green-bg); color: #14532d; }
     .option.wrong { border-color: var(--red); background: var(--red-bg); color: #7f1d1d; }
+    .option.unresolved { border-color: var(--amber); background: #fff7e6; color: #7c4a03; }
+    .answer-feedback {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+    .answer-feedback.correct { background: var(--green-bg); color: #14532d; }
+    .answer-feedback.wrong { background: var(--red-bg); color: #7f1d1d; }
+    .answer-feedback.unavailable { background: #fff7e6; color: #7c4a03; }
     .exam-card {
       margin-top: 18px;
       padding: 13px 15px;
@@ -388,6 +399,7 @@
 
             <h2 id="questionText" class="question"></h2>
             <div id="optionsBox" class="options"></div>
+            <div id="answerFeedback" class="answer-feedback hidden" role="status" aria-live="polite"></div>
 
             <!-- Exam name intentionally appears below all available options. -->
             <div id="examLine" class="exam-card">Exam Name: -</div>
@@ -417,7 +429,8 @@
       signInWithPopup,
       signOut as firebaseSignOut,
       setPersistence,
-      browserSessionPersistence
+      browserLocalPersistence,
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     /* Firebase Console → Project settings → General → Your apps → Web app */
@@ -433,6 +446,7 @@
     // After redeploying Code.gs, paste the latest Apps Script /exec URL here if it changed.
     const API_URL = "https://script.google.com/macros/s/AKfycbzgjLvgyn9acwewbEfjMhtyTmD9HHtJ0wsfIfOwxb1FxvyzA_c3tffSzNvcLeZfKwYr/exec";
     const SESSION_KEY = "kaushalya_pyq_firebase_session";
+    const EMAIL_KEY = "kaushalya_pyq_firebase_email";
     const LETTERS = ["A", "B", "C", "D", "E"];
 
     const accessGate = document.getElementById("accessGate");
@@ -457,6 +471,7 @@
     const scoreLine = document.getElementById("scoreLine");
     const questionText = document.getElementById("questionText");
     const optionsBox = document.getElementById("optionsBox");
+    const answerFeedback = document.getElementById("answerFeedback");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const gotoInput = document.getElementById("gotoInput");
@@ -518,13 +533,42 @@
     async function ensureFirebase() {
       if (firebaseAuth) return firebaseAuth;
       if (!firebaseConfigIsComplete()) {
-        throw new Error("Firebase config HTML me paste nahi ki gayi. FIREBASE_CONFIG section update karein.");
+        throw new Error("Firebase configuration is incomplete. Update the FIREBASE_CONFIG section in the HTML file.");
       }
       firebaseApp = initializeApp(FIREBASE_CONFIG);
       firebaseAuth = getAuth(firebaseApp);
       firebaseAuth.useDeviceLanguage();
-      await setPersistence(firebaseAuth, browserSessionPersistence);
+      await setPersistence(firebaseAuth, browserLocalPersistence);
       return firebaseAuth;
+    }
+
+    function waitForInitialAuthState(auth) {
+      return new Promise((resolve, reject) => {
+        let unsubscribe = null;
+        unsubscribe = onAuthStateChanged(
+          auth,
+          (user) => {
+            if (unsubscribe) unsubscribe();
+            resolve(user || null);
+          },
+          (error) => {
+            if (unsubscribe) unsubscribe();
+            reject(error);
+          }
+        );
+      });
+    }
+
+    function storageGet(key) {
+      try { return clean(localStorage.getItem(key)); } catch (_) { return ""; }
+    }
+
+    function storageSet(key, value) {
+      try { localStorage.setItem(key, clean(value)); } catch (_) {}
+    }
+
+    function storageRemove(key) {
+      try { localStorage.removeItem(key); } catch (_) {}
     }
 
     function apiRequest(action, params = {}, timeoutMs = 25000) {
@@ -536,7 +580,7 @@
 
         const timeoutId = setTimeout(() => {
           cleanup();
-          reject(new Error("Request timeout. Apps Script deployment aur internet connection check karein."));
+          reject(new Error("Request timed out. Check the Apps Script deployment and your internet connection."));
         }, timeoutMs);
 
         function cleanup() {
@@ -556,7 +600,7 @@
 
         script.onerror = () => {
           cleanup();
-          reject(new Error("Google Apps Script Web App se connection nahi ho saka."));
+          reject(new Error("Could not connect to the Google Apps Script Web App."));
         };
 
         document.body.appendChild(script);
@@ -581,10 +625,10 @@
       try {
         const response = await apiRequest("verifyEmail", { email });
         if (response.verified) {
-          setAccessStatus("Email verified. Same Google account se login karein.", "success");
+          setAccessStatus("Email verified. Continue with the same Google account.", "success");
           showGoogleLogin();
         } else {
-          setAccessStatus("Email not verified. ₹39 me access buy karein.", "error");
+          setAccessStatus("Email not verified. Buy full access for ₹39.", "error");
           buyNowBtn.classList.remove("hidden");
         }
       } catch (error) {
@@ -600,23 +644,47 @@
 
     function friendlyFirebaseError(error) {
       const code = clean(error && error.code);
-      if (code === "auth/popup-closed-by-user") return "Google login window close ho gayi. Dobara try karein.";
-      if (code === "auth/popup-blocked") return "Browser ne login popup block kiya. Popups allow karke dobara try karein.";
-      if (code === "auth/unauthorized-domain") return "Ye website domain Firebase Authorized domains me add nahi hai.";
-      if (code === "auth/cancelled-popup-request") return "Ek login request already open hai.";
-      if (code === "auth/network-request-failed") return "Firebase network error. Internet connection check karein.";
+      if (code === "auth/popup-closed-by-user") return "The Google sign-in window was closed. Please try again.";
+      if (code === "auth/popup-blocked") return "The browser blocked the sign-in popup. Allow popups and try again.";
+      if (code === "auth/unauthorized-domain") return "This website domain is not listed in Firebase Authorized domains.";
+      if (code === "auth/cancelled-popup-request") return "A Google sign-in request is already open.";
+      if (code === "auth/network-request-failed") return "Firebase could not connect. Check your internet connection.";
       return clean(error && error.message) || "Firebase Google login failed.";
+    }
+
+    async function createServerSessionFromFirebaseUser(user, options = {}) {
+      const silent = options.silent === true;
+      const signedInEmail = normalizeEmail(user && user.email);
+      if (!validEmail(signedInEmail)) throw new Error("The signed-in Google account does not have a valid email address.");
+      if (!user.emailVerified) throw new Error("The selected Google account email is not verified.");
+
+      if (!silent) setAccessStatus("Verifying your Google account...", "info");
+      const firebaseToken = await user.getIdToken(true);
+      const response = await apiRequest("firebaseLogin", {
+        email: signedInEmail,
+        firebaseToken
+      }, 35000);
+
+      sessionToken = clean(response.sessionToken);
+      if (!sessionToken) throw new Error("The server could not create a login session.");
+
+      pendingEmail = signedInEmail;
+      accessEmail.value = signedInEmail;
+      paymentEmail.value = signedInEmail;
+      storageSet(SESSION_KEY, sessionToken);
+      storageSet(EMAIL_KEY, signedInEmail);
+      return response;
     }
 
     async function loginWithFirebaseGoogle() {
       const email = normalizeEmail(pendingEmail || accessEmail.value);
       if (!validEmail(email)) {
-        setAccessStatus("Pehle registered email submit aur verify karein.", "error");
+        setAccessStatus("Submit and verify your registered email before signing in.", "error");
         return;
       }
 
       setButtonBusy(firebaseGoogleBtn, true, "Opening Google...", "Continue with Google");
-      setAccessStatus("Google login open ho raha hai...", "info");
+      setAccessStatus("Opening Google sign-in...", "info");
 
       try {
         const auth = await ensureFirebase();
@@ -628,23 +696,10 @@
 
         if (!signedInEmail || signedInEmail !== email) {
           await firebaseSignOut(auth);
-          throw new Error("Aapne doosra Google account select kiya. " + email + " account se login karein.");
-        }
-        if (!result.user.emailVerified) {
-          await firebaseSignOut(auth);
-          throw new Error("Google account email verified nahi hai.");
+          throw new Error("You selected a different Google account. Sign in with " + email + ".");
         }
 
-        setAccessStatus("Firebase account verify ho raha hai...", "info");
-        const firebaseToken = await result.user.getIdToken(true);
-        const response = await apiRequest("firebaseLogin", {
-          email,
-          firebaseToken
-        }, 35000);
-
-        sessionToken = clean(response.sessionToken);
-        if (!sessionToken) throw new Error("Server session create nahi hui.");
-        sessionStorage.setItem(SESSION_KEY, sessionToken);
+        await createServerSessionFromFirebaseUser(result.user);
         await openQuizPortal();
       } catch (error) {
         setAccessStatus(friendlyFirebaseError(error), "error");
@@ -663,7 +718,7 @@
     async function startPayment() {
       const email = normalizeEmail(paymentEmail.value);
       if (!validEmail(email)) {
-        setAccessStatus("Payment access ke liye valid email ID enter karein.", "error");
+        setAccessStatus("Enter a valid email address for payment access.", "error");
         return;
       }
       pendingEmail = email;
@@ -673,7 +728,7 @@
       try {
         const order = await apiRequest("createOrder", { email }, 30000);
         if (order.alreadyVerified) {
-          setAccessStatus("Ye email already verified hai. Google login continue karein.", "success");
+          setAccessStatus("This email is already verified. Continue with Google sign-in.", "success");
           purchaseBox.classList.add("hidden");
           showGoogleLogin();
           return;
@@ -681,9 +736,9 @@
 
         const razorpayKey = clean(order.keyId || order.key);
         if (!razorpayKey) {
-          throw new Error("Razorpay Key ID backend se nahi mili. RAZORPAY_KEY_ID Script Property aur latest deployment check karein.");
+          throw new Error("The Razorpay Key ID was not returned by the backend. Check the RAZORPAY_KEY_ID Script Property and deploy the latest Apps Script version.");
         }
-        if (!window.Razorpay) throw new Error("Razorpay checkout load nahi hua.");
+        if (!window.Razorpay) throw new Error("Razorpay Checkout could not load.");
 
         const checkout = new Razorpay({
           key: razorpayKey,
@@ -696,7 +751,7 @@
           notes: { email },
           theme: { color: "#3165e0" },
           handler: async function (paymentResult) {
-            setAccessStatus("Payment received. Access activate ho raha hai...", "info");
+            setAccessStatus("Payment received. Activating access...", "info");
             try {
               await apiRequest("verifyPayment", {
                 email,
@@ -706,15 +761,15 @@
               }, 35000);
               purchaseBox.classList.add("hidden");
               buyNowBtn.classList.add("hidden");
-              setAccessStatus("Payment verified. Email add ho gayi. Google login karein.", "success");
+              setAccessStatus("Payment verified. Your email has been added. Continue with Google sign-in.", "success");
               showGoogleLogin();
             } catch (error) {
-              setAccessStatus("Payment hua, lekin automatic verification fail hui: " + error.message, "error");
+              setAccessStatus("Payment was completed, but automatic verification failed: " + error.message, "error");
             }
           },
           modal: {
             ondismiss: function () {
-              setAccessStatus("Payment window close ho gayi. Aap dobara try kar sakte hain.", "info");
+              setAccessStatus("The payment window was closed. You can try again.", "info");
             }
           }
         });
@@ -733,6 +788,27 @@
       }
     }
 
+    function isSessionError(error) {
+      return /session.*(?:missing|expired)|log in again|login session/i.test(clean(error && error.message));
+    }
+
+    async function refreshServerSessionSilently() {
+      const auth = await ensureFirebase();
+      const user = auth.currentUser || await waitForInitialAuthState(auth);
+      if (!user) throw new Error("Your saved Google sign-in is no longer available. Please sign in again.");
+      await createServerSessionFromFirebaseUser(user, { silent: true });
+    }
+
+    async function protectedApiRequest(action, params = {}, timeoutMs = 30000) {
+      try {
+        return await apiRequest(action, { ...params, token: sessionToken }, timeoutMs);
+      } catch (error) {
+        if (!isSessionError(error)) throw error;
+        await refreshServerSessionSilently();
+        return apiRequest(action, { ...params, token: sessionToken }, timeoutMs);
+      }
+    }
+
     async function openQuizPortal() {
       accessGate.classList.add("hidden");
       quizApp.classList.remove("hidden");
@@ -741,15 +817,15 @@
       quizArea.classList.add("hidden");
 
       try {
-        const response = await apiRequest("getChapters", { token: sessionToken }, 30000);
+        const response = await protectedApiRequest("getChapters", {}, 30000);
         chapters = Array.isArray(response.chapters) ? response.chapters : [];
-        if (!chapters.length) throw new Error("Index sheet me chapter sheets nahi mili.");
+        if (!chapters.length) throw new Error("No chapter sheets were found in the Index sheet.");
         renderSidebar();
         await selectChapter(chapters[0].sheet);
       } catch (error) {
-        sessionStorage.removeItem(SESSION_KEY);
+        storageRemove(SESSION_KEY);
         sessionToken = "";
-        const message = error && error.message ? error.message : "Quiz portal open nahi hua.";
+        const message = error && error.message ? error.message : "The quiz portal could not be opened.";
         if (/session|login|access|expired|verified/i.test(message)) {
           quizApp.classList.add("hidden");
           accessGate.classList.remove("hidden");
@@ -778,11 +854,11 @@
 
       try {
         if (!questionsBySheet[sheetName]) {
-          const response = await apiRequest("getQuestions", { token: sessionToken, sheet: sheetName }, 45000);
+          const response = await protectedApiRequest("getQuestions", { sheet: sheetName }, 45000);
           const rows = Array.isArray(response.data) ? response.data : [];
           questionsBySheet[sheetName] = rows.map(mapRow).filter((q) => q.question && q.options.length >= 2);
         }
-        if (!questionsBySheet[sheetName].length) throw new Error("Is chapter me valid questions nahi mile.");
+        if (!questionsBySheet[sheetName].length) throw new Error("No valid questions were found in this chapter.");
         loadingBox.classList.add("hidden");
         quizArea.classList.remove("hidden");
         renderQuestion();
@@ -814,40 +890,95 @@
         question: getValue(row, ["Questions", "Question", "Ques"]),
         options,
         exam: getValue(row, ["Exam Name", "ExamName", "Exam"]),
-        answer: getValue(row, ["Answer", "Ans", "Correct Answer", "CorrectAnswer"])
+        answer: getValue(row, ["Answer", "Ans", "Correct Answer", "CorrectAnswer", "Right Answer", "RightAnswer"])
       };
     }
 
-    function normalizeText(value) {
-      return clean(value).toLowerCase().replace(/\s+/g, " ").replace(/^[\(\[]?[a-e1-5][\)\].:\-\s]+/i, "").trim();
+    function normalizeComparableText(value, removeOptionLabel = false) {
+      let text = clean(value)
+        .replace(/\u00a0/g, " ")
+        .replace(/[“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      text = text.replace(/^(?:correct\s*)?(?:answer|ans(?:wer)?)\s*(?:is|[:=\-])?\s*/i, "");
+      if (removeOptionLabel) {
+        text = text.replace(/^\s*(?:(?:option|choice)\s*)?(?:\(\s*[a-e1-5]\s*\)|[a-e1-5]\s*[.)\]:\-])\s*/i, "");
+      }
+      return text.toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function explicitAnswerIndex(value, optionCount) {
+      const raw = clean(value).replace(/\u00a0/g, " ").trim();
+      if (!raw) return -1;
+      const text = raw.replace(/^(?:correct\s*)?(?:answer|ans(?:wer)?)\s*(?:is|[:=\-])?\s*/i, "").trim();
+      let match;
+
+      match = text.match(/^(?:option|choice)\s*[-:#]?\s*([1-5])(?:\b|$)/i);
+      if (match) {
+        const index = Number(match[1]) - 1;
+        return index < optionCount ? index : -1;
+      }
+
+      match = text.match(/^(?:option|choice)\s*[-:#]?\s*([a-e])(?:\b|$)/i);
+      if (match) {
+        const index = match[1].toUpperCase().charCodeAt(0) - 65;
+        return index < optionCount ? index : -1;
+      }
+
+      match = text.match(/^\(?\s*([1-5])\s*\)?\s*$/);
+      if (match) {
+        const index = Number(match[1]) - 1;
+        return index < optionCount ? index : -1;
+      }
+
+      match = text.match(/^\(?\s*([a-e])\s*\)?\s*[.)]?\s*$/i);
+      if (match) {
+        const index = match[1].toUpperCase().charCodeAt(0) - 65;
+        return index < optionCount ? index : -1;
+      }
+
+      match = text.match(/^\s*\(\s*([1-5])\s*\)\s+/);
+      if (!match) match = text.match(/^\s*([1-5])\s*[.)\]:\-]\s+/);
+      if (match) {
+        const index = Number(match[1]) - 1;
+        return index < optionCount ? index : -1;
+      }
+
+      match = text.match(/^\s*\(\s*([a-e])\s*\)\s+/i);
+      if (!match) match = text.match(/^\s*([a-e])\s*[.)\]:\-]\s+/i);
+      if (match) {
+        const index = match[1].toUpperCase().charCodeAt(0) - 65;
+        return index < optionCount ? index : -1;
+      }
+
+      return -1;
     }
 
     function getCorrectIndex(question) {
+      const rawAnswer = clean(question && question.answer);
+      const options = Array.isArray(question && question.options) ? question.options : [];
+      if (!rawAnswer || !options.length) return -1;
 
-    const ans = String(question.answer || "").trim().toLowerCase();
+      const explicitIndex = explicitAnswerIndex(rawAnswer, options.length);
+      if (explicitIndex >= 0) return explicitIndex;
 
-    if (!ans) return -1;
+      const answerCandidates = new Set([
+        normalizeComparableText(rawAnswer, false),
+        normalizeComparableText(rawAnswer, true)
+      ].filter(Boolean));
 
-    // Option1 / Option 1 / OPTION1
-    let match = ans.match(/^option\s*([1-5])$/i);
-    if (match) return Number(match[1]) - 1;
+      for (let index = 0; index < options.length; index += 1) {
+        const optionCandidates = [
+          normalizeComparableText(options[index], false),
+          normalizeComparableText(options[index], true)
+        ].filter(Boolean);
+        if (optionCandidates.some((candidate) => answerCandidates.has(candidate))) return index;
+      }
 
-    // 1,2,3,4,5
-    match = ans.match(/^[1-5]$/);
-    if (match) return Number(match[0]) - 1;
-
-    // A,B,C,D,E
-    match = ans.match(/^[a-e]$/i);
-    if (match) return match[0].toUpperCase().charCodeAt(0) - 65;
-
-    // Compare with actual option text
-    for (let i = 0; i < question.options.length; i++) {
-        if (question.options[i].trim().toLowerCase() === ans)
-            return i;
+      return -1;
     }
-
-    return -1;
-}
 
     function currentChapter() {
       return chapters.find((chapter) => chapter.sheet === currentSheet) || { chapter: currentSheet, count: 0 };
@@ -889,6 +1020,33 @@
       return element.innerHTML;
     }
 
+    function setAnswerFeedback(message = "", type = "") {
+      answerFeedback.textContent = message;
+      answerFeedback.className = "answer-feedback" + (type ? " " + type : "");
+      answerFeedback.classList.toggle("hidden", !message);
+    }
+
+    function applyAttemptResult(buttons, attempt, correctIndex) {
+      buttons.forEach((button) => {
+        button.disabled = true;
+        button.classList.remove("correct", "wrong", "unresolved");
+      });
+
+      if (correctIndex < 0 || correctIndex >= buttons.length) {
+        if (buttons[attempt.selectedIndex]) buttons[attempt.selectedIndex].classList.add("unresolved");
+        setAnswerFeedback("The correct answer could not be identified from the Answer column for this question.", "unavailable");
+        return;
+      }
+
+      buttons[correctIndex].classList.add("correct");
+      if (attempt.selectedIndex === correctIndex) {
+        setAnswerFeedback("Correct answer.", "correct");
+      } else {
+        if (buttons[attempt.selectedIndex]) buttons[attempt.selectedIndex].classList.add("wrong");
+        setAnswerFeedback("Incorrect answer. The correct option is highlighted in green.", "wrong");
+      }
+    }
+
     function renderQuestion() {
       const questions = currentQuestions();
       const q = questions[currentQuestionIndex];
@@ -911,55 +1069,41 @@
       gotoInput.value = String(currentQuestionIndex + 1);
 
       optionsBox.innerHTML = "";
+      setAnswerFeedback();
       q.options.forEach((optionText, optionIndex) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "option";
         button.textContent = optionText;
         button.disabled = Boolean(prior);
-        if (prior) {
-          if (optionIndex === correctIndex) button.classList.add("correct");
-          if (prior.selectedIndex === optionIndex && optionIndex !== correctIndex) button.classList.add("wrong");
-        }
         button.addEventListener("click", () => selectOption(optionIndex));
         optionsBox.appendChild(button);
       });
+
+      if (prior) {
+        applyAttemptResult([...optionsBox.querySelectorAll(".option")], prior, correctIndex);
+      }
 
       prevBtn.disabled = currentQuestionIndex === 0;
       nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? "Finish" : "Next →";
     }
 
     function selectOption(selectedIndex) {
+      const id = questionId(currentQuestionIndex);
+      if (attempts.has(id)) return;
 
-    const id = questionId(currentQuestionIndex);
-
-    if (attempts.has(id)) return;
-
-    const q = currentQuestions()[currentQuestionIndex];
-    const correctIndex = getCorrectIndex(q);
-
-    attempts.set(id, {
+      const question = currentQuestions()[currentQuestionIndex];
+      const correctIndex = getCorrectIndex(question);
+      const attempt = {
         selectedIndex,
-        isCorrect: selectedIndex === correctIndex
-    });
+        isCorrect: correctIndex >= 0 && selectedIndex === correctIndex,
+        answerResolved: correctIndex >= 0
+      };
 
-    const buttons = [...optionsBox.querySelectorAll(".option")];
-
-    buttons.forEach((button, index) => {
-
-        button.disabled = true;
-
-        if (index === correctIndex) {
-            button.classList.add("correct");
-        }
-
-        if (index === selectedIndex && selectedIndex !== correctIndex) {
-            button.classList.add("wrong");
-        }
-    });
-
-    scoreLine.textContent = "Score: " + chapterScore();
-}
+      attempts.set(id, attempt);
+      applyAttemptResult([...optionsBox.querySelectorAll(".option")], attempt, correctIndex);
+      scoreLine.textContent = "Score: " + chapterScore();
+    }
 
     function goToQuestion() {
       const questions = currentQuestions();
@@ -987,14 +1131,25 @@
     }
 
     async function logout() {
-      sessionStorage.removeItem(SESSION_KEY);
+      const tokenToInvalidate = sessionToken;
+      if (tokenToInvalidate) {
+        try { await apiRequest("logout", { token: tokenToInvalidate }, 10000); } catch (_) {}
+      }
+
+      storageRemove(SESSION_KEY);
+      storageRemove(EMAIL_KEY);
       sessionToken = "";
+      pendingEmail = "";
       questionsBySheet = {};
       chapters = [];
       attempts.clear();
+
       if (firebaseAuth) {
         try { await firebaseSignOut(firebaseAuth); } catch (_) {}
       }
+
+      accessEmail.value = "";
+      paymentEmail.value = "";
       quizApp.classList.add("hidden");
       accessGate.classList.remove("hidden");
       googleLoginBox.classList.add("hidden");
@@ -1040,13 +1195,31 @@
     });
 
     (async function init() {
-      const saved = clean(sessionStorage.getItem(SESSION_KEY));
-      if (!saved) return;
-      sessionToken = saved;
+      const rememberedEmail = normalizeEmail(storageGet(EMAIL_KEY));
+      if (rememberedEmail) {
+        accessEmail.value = rememberedEmail;
+        paymentEmail.value = rememberedEmail;
+        pendingEmail = rememberedEmail;
+      }
+
       try {
+        const auth = await ensureFirebase();
+        const user = await waitForInitialAuthState(auth);
+        if (!user) {
+          storageRemove(SESSION_KEY);
+          return;
+        }
+
+        setAccessStatus("Restoring your saved login...", "info");
+        await createServerSessionFromFirebaseUser(user, { silent: true });
         await openQuizPortal();
-      } catch (_) {
-        sessionStorage.removeItem(SESSION_KEY);
+      } catch (error) {
+        storageRemove(SESSION_KEY);
+        sessionToken = "";
+        const message = clean(error && error.message);
+        if (message) {
+          setAccessStatus("Your saved login could not be restored. " + message, "error");
+        }
       }
     })();
   </script>
