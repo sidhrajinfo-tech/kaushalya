@@ -885,12 +885,15 @@
       const options = [1, 2, 3, 4, 5]
         .map((number) => getValue(row, ["Option" + number, "Option " + number, LETTERS[number - 1]]))
         .filter((value) => value !== "");
+      const rawAnswerIndex = getValue(row, ["AnswerIndex", "CorrectIndex", "Correct Option Index"]);
+      const parsedAnswerIndex = rawAnswerIndex === "" ? -1 : Number(rawAnswerIndex);
       return {
         sourceIndex,
         question: getValue(row, ["Questions", "Question", "Ques"]),
         options,
         exam: getValue(row, ["Exam Name", "ExamName", "Exam"]),
-        answer: getValue(row, ["Answer", "Ans", "Correct Answer", "CorrectAnswer", "Right Answer", "RightAnswer"])
+        answer: getValue(row, ["Answer", "Ans", "Correct Answer", "CorrectAnswer", "Right Answer", "RightAnswer"]),
+        answerIndex: Number.isInteger(parsedAnswerIndex) ? parsedAnswerIndex : -1
       };
     }
 
@@ -902,7 +905,7 @@
         .replace(/\s+/g, " ")
         .trim();
 
-      text = text.replace(/^(?:correct\s*)?(?:answer|ans(?:wer)?)\s*(?:is|[:=\-])?\s*/i, "");
+      text = text.replace(/^(?:correct\s*)?(?:answer|ans(?:wer)?)\s*\.?\s*(?:is|[:=\-])?\s*/i, "");
       if (removeOptionLabel) {
         text = text.replace(/^\s*(?:(?:option|choice)\s*)?(?:\(\s*[a-e1-5]\s*\)|[a-e1-5]\s*[.)\]:\-])\s*/i, "");
       }
@@ -912,7 +915,7 @@
     function explicitAnswerIndex(value, optionCount) {
       const raw = clean(value).replace(/\u00a0/g, " ").trim();
       if (!raw) return -1;
-      const text = raw.replace(/^(?:correct\s*)?(?:answer|ans(?:wer)?)\s*(?:is|[:=\-])?\s*/i, "").trim();
+      const text = raw.replace(/^(?:correct\s*)?(?:answer|ans(?:wer)?)\s*\.?\s*(?:is|[:=\-])?\s*/i, "").trim();
       let match;
 
       match = text.match(/^(?:option|choice)\s*[-:#]?\s*([1-5])(?:\b|$)/i);
@@ -959,8 +962,15 @@
     function getCorrectIndex(question) {
       const rawAnswer = clean(question && question.answer);
       const options = Array.isArray(question && question.options) ? question.options : [];
-      if (!rawAnswer || !options.length) return -1;
+      if (!options.length) return -1;
 
+      // Prefer the index resolved by Code.gs. This avoids browser-side formatting ambiguity.
+      const serverIndex = Number(question && question.answerIndex);
+      if (Number.isInteger(serverIndex) && serverIndex >= 0 && serverIndex < options.length) {
+        return serverIndex;
+      }
+
+      if (!rawAnswer) return -1;
       const explicitIndex = explicitAnswerIndex(rawAnswer, options.length);
       if (explicitIndex >= 0) return explicitIndex;
 
@@ -1034,7 +1044,7 @@
 
       if (correctIndex < 0 || correctIndex >= buttons.length) {
         if (buttons[attempt.selectedIndex]) buttons[attempt.selectedIndex].classList.add("unresolved");
-        setAnswerFeedback("The correct answer could not be identified from the Answer column for this question.", "unavailable");
+        setAnswerFeedback("This question has an invalid or missing answer value in the source sheet.", "unavailable");
         return;
       }
 
