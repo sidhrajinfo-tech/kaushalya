@@ -368,7 +368,12 @@ input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(59,130,2
 
 @media (max-width: 680px) {
   .site-header { height: 66px; padding: 0 14px; }
-  .brand small, .user-chip-copy { display: none; }
+
+  /* Mobile header: show only the KA logo, hide the full brand name. */
+  .brand > span:not(.brand-mark),
+  .user-chip-copy {
+    display: none;
+  }
   .view { min-height: calc(100vh - 126px); }
   .landing-view { padding: 30px 16px 54px; }
   .hero-copy h1 { font-size: 2.4rem; }
@@ -753,7 +758,7 @@ async function init() {
     $('brandName').textContent = state.config.appName || 'Kaushalya Academy';
     $('payButton').textContent = `Pay ${state.config.paymentAmountDisplay || '₹99'} Securely`;
     $('openPaymentButton').textContent = `Pay Now – ${state.config.paymentAmountDisplay || '₹99'}`;
-    initializeFirebase();
+    await initializeFirebase();
   } catch (error) {
     console.error('Portal initialization failed:', error);
     setEmailStatus(
@@ -800,26 +805,55 @@ function bindEvents() {
   });
 }
 
-function initializeFirebase() {
+async function initializeFirebase() {
   state.firebaseApp = initializeApp(state.config.firebase);
   state.auth = getAuth(state.firebaseApp);
   state.provider = new GoogleAuthProvider();
   state.provider.setCustomParameters({ prompt: 'select_account' });
 
-  setPersistence(state.auth, browserLocalPersistence).catch(() => {});
+  /*
+   * Keep the Firebase session in this browser until the user explicitly
+   * presses Log out. This survives refreshes and reopening the browser.
+   */
+  try {
+    await setPersistence(state.auth, browserLocalPersistence);
+  } catch (error) {
+    console.warn('Firebase persistence could not be enabled:', error);
+  }
+
   onAuthStateChanged(state.auth, async user => {
     state.currentUser = user || null;
+
     if (!user) {
       updateAuthenticatedHeader(null);
       return;
     }
 
+    /*
+     * A restored Firebase user is already authenticated. Use that verified
+     * Google email and let the backend confirm Paid + Active access before
+     * opening the dashboard.
+     */
     const email = normalizeEmail(user.email);
-    if (state.verifiedEmail && email === normalizeEmail(state.verifiedEmail)) {
-      try {
-        await loadDashboard();
-      } catch (error) {
-        showToast(error.message, 'error');
+    state.verifiedEmail = email;
+    localStorage.setItem('mockPortalVerifiedEmail', email);
+    $('emailInput').value = email;
+    $('googleLoginButton').disabled = false;
+
+    try {
+      await loadDashboard();
+    } catch (error) {
+      showToast(error.message, 'error', 7000);
+
+      if ([
+        'INVALID_AUTH_TOKEN',
+        'AUTH_TOKEN_REVOKED',
+        'AUTH_TOKEN_REQUIRED',
+        'USER_NOT_REGISTERED',
+        'PAYMENT_PENDING',
+        'ACCOUNT_INACTIVE',
+      ].includes(error.code)) {
+        await signOut(state.auth).catch(() => {});
       }
     }
   });
