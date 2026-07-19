@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kaushalya Academy | ECE Excellence</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -549,6 +549,484 @@
 .demo-btn:hover{
   border-radius: 0 14px 0 14px;
 }
+
+/* Modern visual refresh — layout and quiz logic remain unchanged */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary: #4f46e5;
+  --dark: #0b1220;
+  --white: #ffffff;
+  --accent: #10b981;
+  --muted: #64748b;
+  --danger: #ef4444;
+  --soft: #f5f7fb;
+  --line: #e7ecf3;
+  --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.13);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.10), transparent 30%),
+    radial-gradient(circle at 88% 90%, rgba(79, 70, 229, 0.09), transparent 28%),
+    #f6f8fc;
+}
+
+button, input { font: inherit; }
+
+#step1,
+#googleLogin {
+  position: relative;
+  overflow: hidden;
+}
+
+#step1::before,
+#googleLogin::before,
+#step1::after,
+#googleLogin::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  filter: blur(2px);
+}
+
+#step1::before,
+#googleLogin::before {
+  width: 330px;
+  height: 330px;
+  top: -160px;
+  right: -90px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.24), rgba(79, 70, 229, 0.08));
+}
+
+#step1::after,
+#googleLogin::after {
+  width: 260px;
+  height: 260px;
+  left: -120px;
+  bottom: -120px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(37, 99, 235, 0.06));
+}
+
+.auth-box {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+  padding: 38px 34px 34px;
+  gap: 13px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.brand-mark {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 19px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.27);
+  margin-bottom: 2px;
+}
+
+.brand-mark.verified {
+  background: linear-gradient(135deg, #10b981, #059669);
+  font-size: 1.65rem;
+  box-shadow: 0 14px 30px rgba(16, 185, 129, 0.25);
+}
+
+.eyebrow {
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.auth-box h2 {
+  font-size: clamp(1.65rem, 4vw, 2rem);
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.auth-subtitle {
+  color: var(--muted);
+  max-width: 330px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin-bottom: 7px;
+}
+
+.auth-box input,
+.auth-box button,
+.auth-box .demo-btn {
+  max-width: 340px;
+  min-height: 50px;
+  border-radius: 14px;
+}
+
+.auth-box input {
+  border: 1px solid #dbe3ee;
+  background: rgba(248, 250, 252, 0.9);
+  padding-inline: 16px;
+  color: var(--dark);
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.auth-box input::placeholder { color: #94a3b8; }
+
+.auth-box input:focus {
+  outline: none;
+  border-color: rgba(37, 99, 235, 0.72);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.11);
+  background: #fff;
+}
+
+.auth-box > button:not(.secondary-auth-btn),
+.pay-btn {
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.20);
+}
+
+.auth-box button:hover,
+.auth-box .demo-btn:hover {
+  transform: translateY(-2px);
+  filter: none;
+}
+
+.secondary-auth-btn {
+  background: #eef2f7 !important;
+  color: #334155 !important;
+  box-shadow: none !important;
+}
+
+.subscription-card {
+  width: 100%;
+  max-width: 340px;
+  padding: 16px;
+  margin-top: 5px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #f8fbff, #f1f5ff);
+  border: 1px solid #dfe8f5;
+  display: grid;
+  gap: 10px;
+}
+
+.offer-label {
+  width: fit-content;
+  margin: auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #047857;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.price-row strong {
+  color: var(--dark);
+  font-size: 1.75rem;
+  letter-spacing: -0.05em;
+}
+
+.price-row span { color: var(--muted); font-size: .78rem; }
+
+.subscription-card .pay-btn,
+.subscription-card .demo-btn {
+  width: 100%;
+  max-width: none;
+  min-height: 44px;
+  padding: 11px 14px;
+  margin: 0;
+}
+
+.subscription-card .pay-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+}
+
+.demo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: var(--primary);
+  border: 1px solid #cddbf1;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.demo-btn:hover {
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.verified-email {
+  width: 100%;
+  max-width: 340px;
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  word-break: break-word;
+  font-weight: 700;
+}
+
+#msg {
+  top: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.loaderOverlay { background: rgba(8, 15, 30, 0.54); }
+
+.loaderBox {
+  width: 220px;
+  padding: 30px;
+  border-radius: 26px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.loader {
+  width: 58px;
+  height: 58px;
+  border-width: 4px;
+  border-top-width: 4px;
+  border-right-width: 4px;
+}
+
+.sidebar {
+  width: 294px;
+  background: linear-gradient(180deg, #0b1220 0%, #111c32 100%);
+  box-shadow: 18px 0 45px rgba(15, 23, 42, 0.08);
+}
+
+.sidebar-header {
+  padding: 28px 22px 24px;
+  text-align: left;
+  border-bottom-color: rgba(148, 163, 184, 0.16);
+}
+
+.sidebar-header h2 {
+  color: #fff;
+  font-size: 1.34rem;
+  letter-spacing: -0.035em;
+}
+
+.sidebar-header p {
+  color: #8fa0bb;
+  margin-top: 7px;
+  letter-spacing: .04em;
+}
+
+.topic-list {
+  padding: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+.topic-item {
+  position: relative;
+  padding: 13px 14px;
+  margin-bottom: 7px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid transparent;
+  color: #cbd5e1;
+  font-weight: 600;
+  transition: background .2s, border-color .2s, color .2s, transform .2s;
+}
+
+.topic-item:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(148, 163, 184, 0.16);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.topic-item.active {
+  background: linear-gradient(135deg, rgba(37,99,235,.95), rgba(79,70,229,.90));
+  border-color: rgba(147,197,253,.42);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, .20);
+}
+
+.main-container { background: transparent; }
+
+.top-nav {
+  min-height: 64px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(226,232,240,.9);
+  box-shadow: 0 8px 28px rgba(15,23,42,.04);
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.menu-btn {
+  border-radius: 11px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 18px rgba(37,99,235,.17);
+}
+
+.content {
+  padding: 42px;
+  align-items: flex-start;
+}
+
+.quiz-card {
+  max-width: 760px;
+  padding: 36px;
+  border-radius: 26px;
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.09);
+}
+
+.quiz-head { margin-bottom: 22px; }
+
+#q-counter {
+  color: var(--primary);
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  font-size: .84rem;
+}
+
+.jump-container {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+
+.jump-input {
+  background: #fff;
+  border-color: #d6deea;
+}
+
+.jump-btn {
+  background: #111827;
+  border-radius: 8px;
+}
+
+.meta-row {
+  padding-bottom: 16px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.score {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.question-text {
+  font-size: clamp(1.08rem, 2vw, 1.28rem);
+  letter-spacing: -0.015em;
+  color: #172033;
+}
+
+.option-btn {
+  min-height: 58px;
+  padding: 16px 17px;
+  margin-bottom: 11px;
+  border: 1px solid #e3e9f1;
+  border-radius: 14px;
+  background: #fbfcfe;
+  font-weight: 600;
+  box-shadow: 0 2px 0 rgba(15,23,42,.015);
+  transition: border-color .18s, background .18s, transform .18s, box-shadow .18s;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #f4f8ff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(37,99,235,.07);
+}
+
+.correct { box-shadow: inset 0 0 0 1px rgba(16,185,129,.12); }
+.wrong { box-shadow: inset 0 0 0 1px rgba(239,68,68,.10); }
+
+.explanation {
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: #f6faf9;
+}
+
+.nav-buttons { margin-top: 28px; }
+
+.btn {
+  min-height: 48px;
+  border-radius: 13px;
+}
+
+.next-btn {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 10px 20px rgba(37,99,235,.16);
+}
+
+.next-btn:hover { background: linear-gradient(135deg, var(--primary-dark), #4338ca); }
+
+.prev-btn { background: #eef2f7; }
+
+.footer-info {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top-color: var(--line);
+}
+
+.logout-link:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .sidebar { width: 286px; left: -286px; }
+  .content { padding: 18px; }
+  .quiz-card { padding: 21px; margin-top: 8px; border-radius: 20px; }
+}
+
+@media (max-width: 520px) {
+  #step1, #googleLogin { padding: 16px; }
+  .auth-box { padding: 30px 20px 22px; border-radius: 23px; }
+  .brand-mark { width: 56px; height: 56px; border-radius: 17px; }
+  .top-nav { min-height: 58px; }
+  .content { padding: 12px; }
+  .quiz-card { padding: 18px 15px; }
+  .meta-row { align-items: flex-start; flex-direction: column; }
+  .jump-container { justify-content: space-between; }
+  .nav-buttons { position: sticky; bottom: 8px; z-index: 5; padding: 8px; margin-inline: -4px; border-radius: 16px; background: rgba(255,255,255,.88); backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(15,23,42,.12); }
+  .credit-line { font-size: .72rem; }
+}
+
   </style>
 </head>
 
@@ -564,19 +1042,17 @@
 
   <div id="step1">
     <div class="auth-box">
-      <h2>Enter Email</h2>
+      <div class="brand-mark" aria-hidden="true">KA</div>
+      <div class="eyebrow">Kaushalya Academy</div>
+      <h2>Welcome Back</h2>
+      <p class="auth-subtitle">Enter your registered email to continue learning.</p>
       <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
       <button id="continueBtn" type="button">Continue</button>
-      <div class="small-note">Buy Subscription ₹49/- only / validity - lifetime
-<br>
-       <button onclick="payNow()" style="background:#10b981;color:white;">
-  Pay Now
-</button>
-
-<br><br>
- <a class="btn demo-btn" href="https://kaushalyaacademy.online/demo" target="_blank">
-      DEMO
-    </a>
+      <div class="small-note subscription-card">
+        <span class="offer-label">Lifetime Access</span>
+        <div class="price-row"><strong>₹49</strong><span>one-time payment</span></div>
+        <button class="pay-btn" onclick="payNow()" type="button">Pay Now</button>
+        <a class="btn demo-btn" href="https://kaushalyaacademy.online/demo" target="_blank" rel="noopener">View Demo</a>
       </div>
     </div>
   </div>
@@ -586,10 +1062,12 @@
 
   <div id="googleLogin" class="hidden">
     <div class="auth-box">
+      <div class="brand-mark verified" aria-hidden="true">✓</div>
+      <div class="eyebrow">Secure Sign In</div>
       <h2>Email Verified</h2>
-      <div class="small-note" id="verifiedEmailText"></div>
+      <div class="small-note verified-email" id="verifiedEmailText"></div>
       <button id="googleBtn" type="button">Continue with Google</button>
-      <button id="backBtn" type="button" style="background:#e2e8f0;">Change Email</button>
+      <button id="backBtn" class="secondary-auth-btn" type="button">Change Email</button>
     </div>
   </div>
 
@@ -803,6 +1281,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
 const state = {
   verifiedEmail: "",
@@ -933,59 +1412,124 @@ async function checkEmail() {
   }
 }
 
+async function completeAuthenticatedLogin(user, options = {}) {
+  const userEmail = String(user && user.email || "").trim().toLowerCase();
+  const savedVerifiedEmail = String(
+    state.verifiedEmail || localStorage.getItem("kaushalya_verified_email") || ""
+  ).trim().toLowerCase();
+  const expectedEmail = savedVerifiedEmail || userEmail;
+
+  if (!userEmail) {
+    throw new Error("Could not read Gmail from Firebase.");
+  }
+
+  if (savedVerifiedEmail && userEmail !== savedVerifiedEmail) {
+    await auth.signOut();
+    throw new Error("Wrong Google Account. Login with: " + savedVerifiedEmail);
+  }
+
+  showLoader(options.restoring ? "Restoring your login..." : "Verifying Gmail...");
+  const idToken = await user.getIdToken(true);
+  const verify = await callApi({
+    action: "verifyLogin",
+    expectedEmail,
+    idToken
+  });
+
+  if (!verify.success) {
+    await auth.signOut();
+    localStorage.removeItem("kaushalya_verified_email");
+    localStorage.removeItem("kaushalya_logged_email");
+    throw new Error(verify.error || "Login verification failed.");
+  }
+
+  state.verifiedEmail = userEmail;
+  state.userEmail = userEmail;
+  state.idToken = idToken;
+  $("email").value = userEmail;
+  $("loggedEmail").textContent = userEmail;
+
+  localStorage.setItem("kaushalya_verified_email", userEmail);
+  localStorage.setItem("kaushalya_logged_email", userEmail);
+
+  showStep("main");
+  await loadTopics();
+}
+
 async function googleLogin() {
   try {
     showLoader("Opening Google login...");
+
+    // LOCAL persistence keeps the authorized user signed in after the browser is closed.
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
 
-    const result = await firebase.auth().signInWithPopup(provider);
-    const user = result.user;
-
-    const userEmail = String(user.email || "").trim().toLowerCase();
-    const expectedEmail = String(state.verifiedEmail || localStorage.getItem("kaushalya_verified_email") || "").trim().toLowerCase();
-
-    if (!expectedEmail) {
-      showMsg("Please verify email first.");
-      await firebase.auth().signOut();
-      showStep("email");
-      return;
-    }
-
-    if (userEmail !== expectedEmail) {
-      showMsg("Wrong Google Account. Login with: " + expectedEmail);
-      await firebase.auth().signOut();
-      showStep("google");
-      return;
-    }
-
-    const idToken = await user.getIdToken(true);
-
-    showLoader("Verifying Gmail...");
-    const verify = await callApi({
-      action: "verifyLogin",
-      expectedEmail,
-      idToken
-    });
-
-    if (!verify.success) {
-      showMsg(verify.error || "Login verification failed.");
-      await firebase.auth().signOut();
-      showStep("email");
-      return;
-    }
-
-    state.userEmail = userEmail;
-    state.idToken = idToken;
-    $("loggedEmail").textContent = userEmail;
-
-    localStorage.setItem("kaushalya_logged_email", userEmail);
-
-    showStep("main");
-    await loadTopics();
+    const result = await auth.signInWithPopup(provider);
+    await completeAuthenticatedLogin(result.user);
   } catch (err) {
     console.error(err);
+
+    if (auth.currentUser) {
+      try { await auth.signOut(); } catch (e) {}
+    }
+
+    const savedEmail = String(
+      state.verifiedEmail || localStorage.getItem("kaushalya_verified_email") || ""
+    ).trim().toLowerCase();
+
+    if (savedEmail) {
+      $("verifiedEmailText").textContent = "Verified email: " + savedEmail;
+      showStep("google");
+    } else {
+      showStep("email");
+    }
+
     showMsg(err.message || "Google login failed.");
+  } finally {
+    hideLoader();
+  }
+}
+
+async function restoreLoginSession() {
+  showLoader("Checking saved login...");
+
+  try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    const user = await new Promise((resolve, reject) => {
+      let unsubscribe = () => {};
+      unsubscribe = auth.onAuthStateChanged(
+        currentUser => {
+          unsubscribe();
+          resolve(currentUser);
+        },
+        error => {
+          unsubscribe();
+          reject(error);
+        }
+      );
+    });
+
+    if (!user) {
+      const savedEmail = String(localStorage.getItem("kaushalya_verified_email") || "").trim().toLowerCase();
+      if (savedEmail) {
+        state.verifiedEmail = savedEmail;
+        $("email").value = savedEmail;
+      }
+      showStep("email");
+      return;
+    }
+
+    await completeAuthenticatedLogin(user, { restoring: true });
+  } catch (err) {
+    console.error("Saved login could not be restored:", err);
+    try { await auth.signOut(); } catch (e) {}
+    localStorage.removeItem("kaushalya_verified_email");
+    localStorage.removeItem("kaushalya_logged_email");
+    showStep("email");
+    showMsg(err.message || "Please login again.");
   } finally {
     hideLoader();
   }
@@ -1193,7 +1737,7 @@ function toggleMenu() {
 }
 
 async function logout() {
-  try { await firebase.auth().signOut(); } catch (e) {}
+  try { await auth.signOut(); } catch (e) {}
   localStorage.removeItem("kaushalya_verified_email");
   localStorage.removeItem("kaushalya_logged_email");
   location.reload();
@@ -1201,7 +1745,12 @@ async function logout() {
 
 $("continueBtn").onclick = checkEmail;
 $("googleBtn").onclick = googleLogin;
-$("backBtn").onclick = () => showStep("email");
+$("backBtn").onclick = () => {
+  state.verifiedEmail = "";
+  localStorage.removeItem("kaushalya_verified_email");
+  $("email").value = "";
+  showStep("email");
+};
 $("menuBtn").onclick = toggleMenu;
 $("overlay").onclick = toggleMenu;
 $("next-btn").onclick = nextQuestion;
@@ -1209,7 +1758,7 @@ $("prev-btn").onclick = prevQuestion;
 $("jumpBtn").onclick = jumpToQuestion;
 $("logoutLink").onclick = logout;
 
-showStep("email");
+restoreLoginSession();
 </script>
 </body>
 </html>
