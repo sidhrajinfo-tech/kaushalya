@@ -7,7 +7,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Kaushalya Academy</title>
+<title>Kaushalya Academy | Technical MCQs, PYQs & Mock Tests</title>
+
+<meta name="description" content="Kaushalya Academy offers technical MCQ practice, previous-year questions and exam-oriented mock tests in one mobile-friendly learning platform.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com"> 
 
@@ -284,13 +286,294 @@ grid-template-columns:1fr;
 
 }
 
+
+
+/************* SINGLE PAGE NAVIGATION ************/
+.site-nav{
+position:sticky;
+top:0;
+z-index:1000;
+background:rgba(6,21,45,.9);
+border-bottom:1px solid rgba(255,255,255,.12);
+backdrop-filter:blur(18px);
+-webkit-backdrop-filter:blur(18px);
+}
+
+.nav-inner{
+width:min(1200px,92%);
+min-height:70px;
+margin:auto;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:22px;
+}
+
+.nav-brand{
+color:#fff;
+text-decoration:none;
+font-size:20px;
+font-weight:800;
+white-space:nowrap;
+}
+
+.nav-brand span{color:#38bdf8;}
+
+.nav-links{
+display:flex;
+align-items:center;
+gap:7px;
+}
+
+.nav-links a{
+color:#dbeafe;
+text-decoration:none;
+padding:10px 13px;
+border-radius:10px;
+font-size:14px;
+font-weight:600;
+transition:.25s;
+}
+
+.nav-links a:hover,
+.nav-links a.active{
+color:#fff;
+background:rgba(56,189,248,.16);
+}
+
+.menu-toggle{
+display:none;
+width:44px;
+height:42px;
+border:1px solid rgba(255,255,255,.16);
+border-radius:11px;
+background:rgba(255,255,255,.08);
+color:#fff;
+font-size:22px;
+cursor:pointer;
+}
+
+#home,#courses,#about,#privacy,#contact{scroll-margin-top:92px;}
+
+/************* INFORMATION SECTIONS ************/
+.info-section{
+margin-top:70px;
+padding:45px 0 5px;
+}
+
+.section-heading{
+max-width:820px;
+margin:0 auto 28px;
+text-align:center;
+}
+
+.section-label{
+display:inline-block;
+padding:8px 16px;
+margin-bottom:14px;
+border-radius:999px;
+background:rgba(56,189,248,.12);
+border:1px solid rgba(125,211,252,.24);
+color:#7dd3fc;
+font-size:14px;
+font-weight:700;
+}
+
+.section-heading h2{
+font-size:clamp(32px,5vw,48px);
+line-height:1.15;
+margin-bottom:14px;
+background:linear-gradient(90deg,#fff,#38bdf8,#67e8f9);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.section-heading p{
+color:#cbd5e1;
+font-size:17px;
+line-height:1.8;
+}
+
+.info-card{
+background:#fff;
+color:#111827;
+border-radius:24px;
+padding:30px;
+box-shadow:0 20px 60px rgba(0,0,0,.22);
+margin-bottom:22px;
+}
+
+.info-card h3{
+color:#0f172a;
+font-size:24px;
+margin-bottom:12px;
+}
+
+.info-card h4{
+color:#0f172a;
+font-size:18px;
+margin:22px 0 9px;
+}
+
+.info-card p,
+.info-card li{
+color:#475569;
+font-size:15px;
+line-height:1.85;
+}
+
+.info-card ul{padding-left:22px;margin-top:10px;}
+
+.info-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+}
+
+.two-col{grid-template-columns:repeat(2,1fr);}
+
+.highlight-box{
+height:100%;
+background:#f8fafc;
+border:1px solid #e2e8f0;
+border-radius:18px;
+padding:22px;
+}
+
+.highlight-box strong{
+display:block;
+color:#0f172a;
+font-size:17px;
+margin-bottom:8px;
+}
+
+.notice-box{
+margin-top:20px;
+padding:17px 19px;
+border-radius:15px;
+background:#e0f2fe;
+border-left:5px solid #0284c7;
+color:#334155;
+font-size:14px;
+line-height:1.75;
+}
+
+.contact-layout{
+display:grid;
+grid-template-columns:.9fr 1.1fr;
+gap:22px;
+align-items:start;
+}
+
+.contact-item{
+margin-top:16px;
+padding:16px;
+border:1px solid #e2e8f0;
+border-radius:14px;
+background:#f8fafc;
+}
+
+.contact-item strong{display:block;color:#0f172a;margin-bottom:5px;}
+.contact-item a{color:#0369a1;text-decoration:none;font-weight:700;word-break:break-word;}
+
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;color:#0f172a;font-size:14px;font-weight:700;margin-bottom:7px;}
+.form-group input,
+.form-group select,
+.form-group textarea{
+width:100%;
+padding:13px 14px;
+border:1px solid #cbd5e1;
+border-radius:11px;
+background:#fff;
+color:#0f172a;
+font:inherit;
+outline:none;
+}
+.form-group textarea{min-height:135px;resize:vertical;}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.13);}
+
+.submit-btn{
+width:100%;
+padding:15px;
+border:0;
+border-radius:12px;
+background:linear-gradient(90deg,#2563eb,#06b6d4);
+color:#fff;
+font-size:17px;
+font-weight:800;
+cursor:pointer;
+}
+
+.form-status{
+display:none;
+margin-top:13px;
+padding:12px;
+border-radius:10px;
+background:#dcfce7;
+color:#166534;
+font-size:13px;
+line-height:1.6;
+}
+
+.footer-links{
+display:flex;
+justify-content:center;
+gap:10px 20px;
+flex-wrap:wrap;
+margin:0 0 22px;
+}
+.footer-links a{color:#7dd3fc;text-decoration:none;font-size:14px;font-weight:600;}
+.footer-links a:hover{text-decoration:underline;}
+
+@media(max-width:900px){
+.menu-toggle{display:block;}
+.nav-inner{min-height:66px;position:relative;}
+.nav-links{
+display:none;
+position:absolute;
+top:58px;
+left:0;
+right:0;
+flex-direction:column;
+align-items:stretch;
+padding:12px;
+border:1px solid rgba(255,255,255,.12);
+border-radius:15px;
+background:#0a1d3b;
+box-shadow:0 20px 45px rgba(0,0,0,.35);
+}
+.nav-links.open{display:flex;}
+.nav-links a{text-align:center;padding:11px;}
+.info-grid,.two-col,.contact-layout{grid-template-columns:1fr;}
+.info-section{margin-top:50px;padding-top:32px;}
+.info-card{padding:22px;}
+}
+
 </style>
 
 </head>
 
 <body>
 
-<section class="hero">
+
+<nav class="site-nav" aria-label="Main navigation">
+<div class="nav-inner">
+<a class="nav-brand" href="#home">Kaushalya <span>Academy</span></a>
+<button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+<div class="nav-links" id="navLinks">
+<a class="active" href="#home">Home</a>
+<a href="#courses">Courses</a>
+<a href="#about">About Us</a>
+<a href="#privacy">Privacy Policy</a>
+<a href="#contact">Contact</a>
+</div>
+</div>
+</nav>
+
+<section class="hero" id="home">
 
 <div class="logo">
 
@@ -318,7 +601,7 @@ Empowering Technical Education Through Smart Learning
 
 </section>
 
-<div class="wrapper">
+<div class="wrapper" id="courses">
 
 <div class="grid">
 
@@ -608,6 +891,142 @@ gap:10px;">
 
 <!-- GRID END -->
 
+
+
+<!-- ===========================
+        ABOUT US
+=========================== -->
+<section class="info-section" id="about">
+<div class="section-heading">
+<div class="section-label">🎓 About Our Platform</div>
+<h2>About Kaushalya Academy</h2>
+<p>An independent technical learning platform created to make exam practice structured, practical and accessible on both mobile and desktop.</p>
+</div>
+
+<div class="info-card">
+<h3>Learning built for serious technical exam preparation</h3>
+<p>Kaushalya Academy helps students prepare for technical and competitive examinations through chapter-wise MCQ practice, previous-year questions and full-length mock tests. The learning flow is designed to help students revise important concepts, recognise repeated question patterns and understand their performance after every attempt.</p>
+<div class="info-grid" style="margin-top:22px;">
+<div class="highlight-box"><strong>Practice with purpose</strong><p>Questions are organised around useful topics and frequently tested concepts instead of random practice.</p></div>
+<div class="highlight-box"><strong>Simple learning flow</strong><p>Learners can move from topic practice to PYQs and then to exam-style mock tests without unnecessary complexity.</p></div>
+<div class="highlight-box"><strong>Performance awareness</strong><p>Instant results and review tools help students identify mistakes and decide what they should revise next.</p></div>
+</div>
+</div>
+
+<div class="info-card">
+<h3>Our content principles</h3>
+<ul>
+<li>Practice material should support learning, revision and realistic exam preparation.</li>
+<li>Explanations should help learners understand and correct mistakes.</li>
+<li>Course information, pricing and access details should remain clear.</li>
+<li>The platform should be fast, mobile friendly and easy to navigate.</li>
+<li>Learning material should be reviewed and improved as the question library grows.</li>
+</ul>
+<div class="notice-box"><strong>Independent platform:</strong> Kaushalya Academy is not an official website of GPSC, GSSSB, PSI Wireless, ISRO, GATE, RRB, SSC, DRDO or any other examination authority, government department or public-sector organisation. Examination names are used only to describe the type of preparation material available.</div>
+</div>
+</section>
+
+<!-- ===========================
+        PRIVACY POLICY
+=========================== -->
+<section class="info-section" id="privacy">
+<div class="section-heading">
+<div class="section-label">🔒 Privacy & Data</div>
+<h2>Privacy Policy</h2>
+<p>This policy explains what information may be collected when you use Kaushalya Academy and how that information may be handled.</p>
+</div>
+
+<div class="info-card">
+<h3>1. Information we may collect</h3>
+<p>Depending on the feature used, the platform may receive information required to provide access and improve the learning service. This may include your name, email address, login or access status, purchase status, test attempts, selected answers, scores, device information and basic technical logs.</p>
+<h4>Information provided directly</h4>
+<ul>
+<li>Details entered during sign-in, registration, purchase or support contact.</li>
+<li>Messages submitted through the contact form.</li>
+<li>Answers, test activity and progress created while using practice products.</li>
+</ul>
+<h4>Information collected automatically</h4>
+<ul>
+<li>Browser type, device type, timestamps and pages visited.</li>
+<li>Technical information used for security, troubleshooting and performance.</li>
+<li>Cookies or local browser storage used to maintain login and preferences.</li>
+</ul>
+</div>
+
+<div class="info-grid two-col">
+<div class="info-card">
+<h3>2. How information is used</h3>
+<ul>
+<li>To activate and maintain authorised learning access.</li>
+<li>To save progress, calculate results and show reviews.</li>
+<li>To answer questions and resolve technical or access issues.</li>
+<li>To prevent misuse, fraud and security incidents.</li>
+<li>To improve content quality and platform reliability.</li>
+</ul>
+<p style="margin-top:14px;">Kaushalya Academy does not sell personal information and does not use learner data to promise examination selection or employment.</p>
+</div>
+<div class="info-card">
+<h3>3. Payments and third parties</h3>
+<p>Payments, authentication, hosting, analytics or database functions may be handled by third-party providers under their own terms and privacy practices. Kaushalya Academy does not intentionally store complete card or banking details on its learning pages.</p>
+<h4>External links</h4>
+<p>The website may link to another page or service. Kaushalya Academy is not responsible for the content, security or privacy practices of an external website after a learner leaves this platform.</p>
+</div>
+</div>
+
+<div class="info-grid two-col">
+<div class="info-card">
+<h3>4. Protection and retention</h3>
+<p>Reasonable technical and organisational measures are used to protect information, although no internet-based system can guarantee absolute security. Information is retained only for as long as reasonably required for access, support, accounting, legal, fraud-prevention or service-improvement purposes.</p>
+</div>
+<div class="info-card">
+<h3>5. Your choices and policy updates</h3>
+<p>You may contact Kaushalya Academy to request correction or deletion of account-related information, subject to identity verification and applicable record-keeping requirements. Minors should use the platform with the knowledge of a parent or legal guardian.</p>
+<div class="notice-box"><strong>Last updated:</strong> 19 July 2026. Privacy-related questions can be submitted through the Contact section below.</div>
+</div>
+</div>
+</section>
+
+<!-- ===========================
+        CONTACT
+=========================== -->
+<section class="info-section" id="contact">
+<div class="section-heading">
+<div class="section-label">💬 Learner Support</div>
+<h2>Contact Us</h2>
+<p>Reach Kaushalya Academy for course information, account access, payment confirmation, technical problems or privacy-related requests.</p>
+</div>
+
+<div class="contact-layout">
+<div class="info-card">
+<h3>Contact Kaushalya Academy</h3>
+<p>Please mention the relevant product and provide enough detail for the issue to be understood clearly.</p>
+<div class="contact-item"><strong>Website</strong><a href="https://kaushalyaacademy.online" target="_blank" rel="noopener">kaushalyaacademy.online</a></div>
+<div class="contact-item"><strong>Email</strong><a href="mailto:contact@kaushalyaacademy.online">contact@kaushalyaacademy.online</a></div>
+<div class="contact-item"><strong>Safety reminder</strong><p>For payment or access support, mention the email used during purchase and a safe transaction reference. Never send passwords, OTPs or complete banking details.</p></div>
+<h4>Before contacting support</h4>
+<ul>
+<li>Use the same browser and email used during activation.</li>
+<li>Refresh the page once and confirm your internet connection.</li>
+<li>For a question issue, include the test name and question number.</li>
+</ul>
+</div>
+
+<div class="info-card">
+<h3>Send a message</h3>
+<form id="contactForm">
+<div class="form-group"><label for="contactName">Full name</label><input id="contactName" name="name" type="text" autocomplete="name" required></div>
+<div class="form-group"><label for="contactEmail">Email address</label><input id="contactEmail" name="email" type="email" autocomplete="email" required></div>
+<div class="form-group"><label for="contactProduct">Related product</label><select id="contactProduct" name="product"><option>General enquiry</option><option>PSI Wireless MCQ Practice</option><option>Previous Year Questions</option><option>PSI Wireless Mock Tests</option><option>Payment or access issue</option><option>Privacy request</option></select></div>
+<div class="form-group"><label for="contactSubject">Subject</label><input id="contactSubject" name="subject" type="text" required></div>
+<div class="form-group"><label for="contactMessage">Message</label><textarea id="contactMessage" name="message" required></textarea></div>
+<button class="submit-btn" type="submit">Prepare Email</button>
+<div class="form-status" id="formStatus">Your email application is opening with the message prepared. Review it and press Send.</div>
+</form>
+</div>
+</div>
+</section>
+
+
 <!-- ===========================
         FOOTER
 =========================== -->
@@ -657,6 +1076,16 @@ margin-bottom:25px;
 
 <span>📱 Mobile Friendly</span>
 
+</div>
+
+
+
+<div class="footer-links" aria-label="Footer navigation">
+<a href="#home">Home</a>
+<a href="#courses">Courses</a>
+<a href="#about">About Us</a>
+<a href="#privacy">Privacy Policy</a>
+<a href="#contact">Contact</a>
 </div>
 
 <p style="font-size:14px;color:#94a3b8;">
@@ -753,6 +1182,59 @@ const y=(window.innerHeight/2-e.clientY)/45;
 hero.style.transform=`translate(${x}px,${y}px)`;
 
 });
+
+
+
+/**************
+SINGLE PAGE NAVIGATION
+**************/
+const menuToggle=document.getElementById('menuToggle');
+const navLinks=document.getElementById('navLinks');
+
+menuToggle.addEventListener('click',()=>{
+const isOpen=navLinks.classList.toggle('open');
+menuToggle.setAttribute('aria-expanded',String(isOpen));
+menuToggle.textContent=isOpen?'✕':'☰';
+});
+
+document.querySelectorAll('.nav-links a').forEach(link=>{
+link.addEventListener('click',()=>{
+navLinks.classList.remove('open');
+menuToggle.setAttribute('aria-expanded','false');
+menuToggle.textContent='☰';
+});
+});
+
+const pageSections=document.querySelectorAll('#home,#courses,#about,#privacy,#contact');
+const sectionLinks=document.querySelectorAll('.nav-links a');
+
+const sectionObserver=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+sectionLinks.forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+entry.target.id));
+}
+});
+},{rootMargin:'-35% 0px -55% 0px',threshold:0});
+
+pageSections.forEach(section=>sectionObserver.observe(section));
+
+/**************
+CONTACT FORM
+**************/
+const contactForm=document.getElementById('contactForm');
+
+contactForm.addEventListener('submit',event=>{
+event.preventDefault();
+const name=document.getElementById('contactName').value.trim();
+const email=document.getElementById('contactEmail').value.trim();
+const product=document.getElementById('contactProduct').value;
+const subject=document.getElementById('contactSubject').value.trim();
+const message=document.getElementById('contactMessage').value.trim();
+const body=`Name: ${name}\nEmail: ${email}\nRelated product: ${product}\n\nMessage:\n${message}`;
+document.getElementById('formStatus').style.display='block';
+window.location.href=`mailto:contact@kaushalyaacademy.online?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+});
+
 
 </script>
 
