@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaushalya Academy - PYQ Demo</title>
+  <meta name="theme-color" content="#081833" />
+<style>
+    :root {
+      --bg: #eef2f7;
+      --navy: #071938;
+      --navy-soft: #0d2752;
+      --primary: #3165e0;
+      --primary-dark: #2451bd;
+      --primary-soft: #eaf1ff;
+      --text: #102039;
+      --muted: #687891;
+      --white: #ffffff;
+      --green: #10b981;
+      --green-bg: #dcfce7;
+      --red: #ef4444;
+      --red-bg: #fee2e2;
+      --amber: #f59e0b;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --sidebar-width: 315px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .hidden { display: none !important; }
+
+    /* Access gate */
+    .access-gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(49, 101, 224, 0.18), transparent 35%),
+        radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.13), transparent 36%),
+        linear-gradient(135deg, #071938, #0b2552 58%, #12346c);
+    }
+    .access-card {
+      width: min(100%, 510px);
+      background: rgba(255,255,255,0.98);
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.30);
+    }
+    .access-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary), #7398ff);
+      color: #fff;
+      font-size: 27px;
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(49,101,224,0.28);
+    }
+    .access-card h1 { margin: 0; font-size: 29px; line-height: 1.2; }
+    .access-card > p { margin: 10px 0 24px; color: var(--muted); line-height: 1.6; }
+    .field-label { display: block; margin-bottom: 8px; font-weight: 800; color: #32435e; }
+    .email-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+    .email-input {
+      width: 100%;
+      height: 52px;
+      border: 1.5px solid #d4dce8;
+      border-radius: 14px;
+      padding: 0 15px;
+      outline: none;
+      color: var(--text);
+      background: #fff;
+    }
+    .email-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(49,101,224,0.10); }
+    .access-btn {
+      min-height: 52px;
+      border: 0;
+      border-radius: 14px;
+      padding: 0 20px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+    .access-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .access-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .verify-btn { background: var(--primary); color: #fff; }
+    .buy-btn { width: 100%; background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; margin-top: 12px; }
+    .pay-btn { width: 100%; background: var(--green); color: #fff; margin-top: 10px; }
+    .firebase-google-btn {
+      width: 100%;
+      min-height: 50px;
+      border: 1.5px solid #d7dfeb;
+      border-radius: 14px;
+      background: #fff;
+      color: #24344e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: .16s ease;
+    }
+    .firebase-google-btn:hover:not(:disabled) { border-color: #9bb3e8; transform: translateY(-1px); box-shadow: 0 8px 22px rgba(49,101,224,.10); }
+    .firebase-google-btn:disabled { opacity: .62; cursor: not-allowed; }
+    .google-icon { width: 20px; height: 20px; flex: 0 0 auto; }
+    .status-box {
+      margin-top: 16px;
+      padding: 13px 14px;
+      border-radius: 13px;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+    .status-info { background: var(--primary-soft); color: #234b9a; }
+    .status-success { background: var(--green-bg); color: #14633c; }
+    .status-error { background: var(--red-bg); color: #991b1b; }
+    .purchase-box {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid #f7cf85;
+      background: #fff9ec;
+      border-radius: 16px;
+    }
+    .purchase-title { font-weight: 900; color: #8a4b08; margin-bottom: 10px; }
+    .price-line { color: #6b4a1d; font-size: 14px; margin: 8px 0 0; }
+    .google-box {
+      margin-top: 16px;
+      padding: 17px;
+      border-radius: 16px;
+      border: 1px solid #dbe4f0;
+      background: #f8fafc;
+    }
+    .google-title { font-weight: 850; margin-bottom: 12px; }
+    #googleButton { min-height: 44px; }
+    .secure-note { margin-top: 18px; color: #8693a6; font-size: 13px; text-align: center; }
+
+    /* Quiz shell */
+    .quiz-app { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 50;
+      width: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      background: linear-gradient(180deg, #061630 0%, #071938 100%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      transform: translateX(0);
+      transition: transform .24s ease;
+      box-shadow: 15px 0 35px rgba(3, 12, 28, 0.10);
+    }
+    body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
+    .brand {
+      padding: 23px 18px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand-title { margin: 0; font-size: 20px; font-weight: 900; color: #83a6ff; }
+    .brand-subtitle { margin: 5px 0 0; color: rgba(255,255,255,.67); font-size: 13px; }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-weight: 900;
+    }
+    .sidebar-close { background: rgba(255,255,255,.10); color: #fff; font-size: 22px; }
+    .chapter-list { padding: 14px 10px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 9px; }
+    .chapter-btn {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.075);
+      color: #fff;
+      border-radius: 14px;
+      padding: 13px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: .16s ease;
+      font-weight: 750;
+      line-height: 1.38;
+    }
+    .chapter-btn:hover { background: rgba(255,255,255,.13); }
+    .chapter-btn.active { background: var(--primary); box-shadow: 0 8px 24px rgba(49,101,224,.28); }
+    .chapter-count { opacity: .75; font-size: 12px; display: block; margin-top: 3px; }
+
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(4, 12, 28, .58);
+      opacity: 0;
+      visibility: hidden;
+      transition: .2s ease;
+    }
+    .content-shell { min-height: 100vh; margin-left: var(--sidebar-width); transition: margin-left .24s ease; }
+    body.sidebar-collapsed .content-shell { margin-left: 0; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 70px;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid #e4eaf2;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .menu-btn { background: #eaf0f8; color: #142846; font-size: 22px; }
+    .topbar-title { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .logout-btn { border: 0; background: #edf1f6; color: #42536c; padding: 10px 14px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+    .main { display: flex; justify-content: center; padding: 30px 24px 44px; }
+    .card { width: min(100%, 820px); background: #fff; border-radius: 26px; padding: 31px; box-shadow: var(--shadow); }
+    .top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
+    .progress-title { font-size: 16px; font-weight: 850; color: #52637d; }
+    .meta-line { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 11px 0 20px; font-weight: 800; }
+    .subject { color: #e83d4d; }
+    .score { color: #0aaa50; margin-left: auto; }
+    .goto-box { display: flex; align-items: center; gap: 7px; padding: 7px 9px; background: #eef2f6; border-radius: 13px; flex-shrink: 0; }
+    .goto-box label { color: #6b7a90; font-size: 13px; font-weight: 750; }
+    .goto-input { width: 58px; height: 34px; border: 1px solid #ccd6e2; border-radius: 8px; text-align: center; font-weight: 800; outline: none; }
+    .goto-btn { height: 34px; min-width: 42px; border: 0; border-radius: 8px; background: var(--navy); color: #fff; font-weight: 850; cursor: pointer; }
+    .question { margin: 0 0 25px; font-size: clamp(22px, 2.15vw, 29px); line-height: 1.43; font-weight: 850; color: #0d203d; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .options { display: grid; gap: 13px; }
+    .option { width: 100%; border: 2px solid #e2e9f2; border-radius: 17px; background: #fff; padding: 17px 18px; text-align: left; color: #102039; cursor: pointer; font-size: 16.5px; font-weight: 720; line-height: 1.5; transition: .15s ease; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .option:hover:not(:disabled) { border-color: #93aff8; transform: translateY(-1px); }
+    .option:disabled { cursor: default; }
+    .option.correct { border-color: var(--green); background: var(--green-bg); color: #14532d; }
+    .option.wrong { border-color: var(--red); background: var(--red-bg); color: #7f1d1d; }
+    .option.unresolved { border-color: var(--amber); background: #fff7e6; color: #7c4a03; }
+    .answer-feedback {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+    .answer-feedback.correct { background: var(--green-bg); color: #14532d; }
+    .answer-feedback.wrong { background: var(--red-bg); color: #7f1d1d; }
+    .answer-feedback.unavailable { background: #fff7e6; color: #7c4a03; }
+    .exam-card {
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 14px;
+      background: var(--primary-soft);
+      border-left: 5px solid var(--primary);
+      color: #2050ac;
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+    .btn { height: 55px; border: 0; border-radius: 15px; cursor: pointer; font-size: 17px; font-weight: 850; transition: .15s ease; }
+    .btn-secondary { background: #eef2f6; color: #718098; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+    .btn:disabled { opacity: .52; cursor: not-allowed; }
+    .footer { margin-top: 25px; border-top: 1px solid #edf1f5; padding-top: 18px; text-align: center; color: #8996a8; }
+    .footer-title { font-weight: 850; letter-spacing: .35px; margin-bottom: 5px; }
+    .footer-sub { font-size: 13px; font-weight: 700; }
+    .loader-wrap, .error-box, .empty-box { text-align: center; padding: 35px 10px; }
+    .loader { width: 46px; height: 46px; border: 4px solid #dbe6ff; border-top-color: var(--primary); border-radius: 50%; margin: 0 auto 14px; animation: spin .8s linear infinite; }
+    .error-box { color: #991b1b; background: #fff1f2; border-radius: 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .content-shell, body.sidebar-collapsed .content-shell { margin-left: 0; }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      body.sidebar-open .sidebar-backdrop { opacity: 1; visibility: visible; }
+      .main { padding: 22px 16px 38px; }
+    }
+    @media (max-width: 650px) {
+      .access-card { padding: 25px 20px; border-radius: 22px; }
+      .email-row { grid-template-columns: 1fr; }
+      .verify-btn { width: 100%; }
+      .topbar { height: 64px; padding: 0 13px; }
+      .topbar-title { font-size: 15px; }
+      .logout-btn { padding: 9px 10px; font-size: 13px; }
+      .card { padding: 20px 17px; border-radius: 21px; }
+      .top-row { flex-direction: column; }
+      .goto-box { width: 100%; justify-content: flex-end; }
+      .meta-line { align-items: flex-start; }
+      .score { margin-left: 0; width: 100%; }
+      .question { font-size: 21px; }
+      .option { padding: 15px; font-size: 15.5px; }
+      .action-row { grid-template-columns: 1fr; }
+      .sidebar { width: min(88vw, 315px); }
+    }
+  </style>
+</head>
+<body>
+  <div id="quizApp" class="quiz-app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-row">
+          <div>
+            <h1 class="brand-title">Kaushalya Academy</h1>
+            <p class="brand-subtitle">Chapter-wise PYQ Practice</p>
+          </div>
+          <button id="sidebarClose" class="icon-btn sidebar-close" type="button" aria-label="Hide sidebar">×</button>
+        </div>
+      </div>
+      <div id="chapterList" class="chapter-list"></div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <div class="content-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menuToggle" class="icon-btn menu-btn" type="button" aria-label="Open or hide sidebar">☰</button>
+          <div id="topbarTitle" class="topbar-title">PYQ Practice Portal</div>
+        </div>
+        <button id="logoutBtn" class="logout-btn" type="button">Restart</button>
+      </header>
+
+      <main class="main">
+        <section class="card">
+          <div id="loadingBox" class="loader-wrap"><div class="loader"></div>Loading questions...</div>
+          <div id="errorBox" class="error-box hidden"></div>
+
+          <div id="quizArea" class="hidden">
+            <div class="top-row">
+              <div id="questionCounter" class="progress-title">Question 1/10</div>
+              <div class="goto-box">
+                <label for="gotoInput">Go to:</label>
+                <input id="gotoInput" class="goto-input" type="number" min="1" value="1" />
+                <button id="gotoBtn" class="goto-btn" type="button">Go</button>
+              </div>
+            </div>
+
+            <div class="meta-line">
+              <span id="subjectLine" class="subject">Subject: -</span>
+              <span id="scoreLine" class="score">Score: 0</span>
+            </div>
+
+            <h2 id="questionText" class="question"></h2>
+            <div id="optionsBox" class="options"></div>
+            <div id="answerFeedback" class="answer-feedback hidden" role="status" aria-live="polite"></div>
+
+            <div id="examLine" class="exam-card">Exam Name: -</div>
+
+            <div class="action-row">
+              <button id="prevBtn" class="btn btn-secondary" type="button">← Previous</button>
+              <button id="nextBtn" class="btn btn-primary" type="button">Next →</button>
+            </div>
+
+            <div class="footer">
+              <div class="footer-title">MADE BY - KAUSHALYA ACADEMY</div>
+              <div class="footer-sub">PYQ • Mock Test • MCQ Practice</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const DEMO_CHAPTERS = [{"sheet":"01 Components Materials","chapter":"Electronic Components & Materials","questions":[{"question":"Examples of donor-type impurities are:","options":["Phosphorus and arsenic","Aluminium","Arsenic and gallium","Gallium and indium"],"answerIndex":0,"exam":"IOCL (TA) — 29.09.2024"},{"question":"A pentavalent impurity is added to a pure semiconductor crystal to obtain:","options":["N-type semiconductor","P-type semiconductor","Intrinsic semiconductor","Insulating material"],"answerIndex":0,"exam":"ISRO URSC (TA) — 18.04.2024"},{"question":"A trivalent impurity is added to a pure semiconductor to obtain:","options":["N-type semiconductor","P-type semiconductor","Intrinsic semiconductor","Superconductor"],"answerIndex":1,"exam":"ISRO URSC (TA) — 18.04.2024"},{"question":"A Buchholz relay is used for the protection of:","options":["Air-cooled transformers","Oil-cooled transformers","Induction motors","Transmission lines"],"answerIndex":1,"exam":"CGPSC AE 2021 • RRB JE 2019 • ESIC JE 2016 • LMRC JE 2015"},{"question":"A protective relay system should possess:","options":["Selectivity only","Speed only","Sensitivity only","Selectivity, speed and sensitivity"],"answerIndex":3,"exam":"PGCIL SR-I 2021 • Nagaland PSC CTSE 2015"},{"question":"Differential relays are primarily used to protect equipment against:","options":["Internal faults","Reverse current","Overvoltage only","External faults only"],"answerIndex":0,"exam":"TSTRANSCO JE 2018 • HPSSC JE 2017 • BSNL TTA 2013"},{"question":"Which material has a negative temperature coefficient of resistance?","options":["Carbon","Tin","Brass","Copper"],"answerIndex":0,"exam":"UPPCL TG-2 2023/2021 • KPSC 2022/2019/2017 • UPRVUNL 2016"},{"question":"The main requirement of insulating material used in cables is:","options":["Low insulation resistance","High dielectric strength","High hygroscopicity","High thermal expansion"],"answerIndex":1,"exam":"UPPCL TG-2 2023 • UPRVUNL TG-2 2021"},{"question":"Which material has the highest electrical conductivity?","options":["Gold","Silver","Copper","Aluminium"],"answerIndex":1,"exam":"SSC IMD 2017 • JVVNL 2018 • ISRO 2019"},{"question":"Light remains confined within the core of an optical fibre due to:","options":["Refraction","Scattering","Diffraction","Total internal reflection at the core-cladding boundary"],"answerIndex":3,"exam":"ISRO 2018/2019 • BSNL TTA 2016 • DMRC 2014 • Cochin Shipyard 2021"}],"count":10},{"sheet":"02 Devices Circuits","chapter":"Electronic Devices and Circuits","questions":[{"question":"FETs are preferred in amplifier input stages mainly because of their:","options":["High input impedance","High leakage current","Low thermal stability","Current-controlled operation"],"answerIndex":0,"exam":"UPMRC JE 2020 • ISRO VSSC/LPSC • Telecom Circle PYQs"},{"question":"In an N-channel JFET, the drain current is maximum when VGS is:","options":["Equal to +VDD","Equal to pinch-off voltage","Equal to 0 V","Very large and positive"],"answerIndex":2,"exam":"BSNL TTA 2016"},{"question":"The ripple factor of a half-wave rectifier is approximately:","options":["0.482","1.21","0.812","1.57"],"answerIndex":1,"exam":"SSC IMD 2022 • NPCIL 2022 • ISRO 2011 • Telecom PYQs"},{"question":"The theoretical maximum rectification efficiency of a half-wave rectifier is:","options":["40.6%","50%","78.5%","81.2%"],"answerIndex":0,"exam":"SSC IMD 2022 • LMRC 2018 • BSNL/RRB/DMRC PYQs"},{"question":"The theoretical maximum rectification efficiency of a full-wave rectifier is:","options":["40.6%","55.6%","81.2%","100%"],"answerIndex":2,"exam":"SSC IMD 2022 • DFCCIL 2018/2021 • DMRC 2014"},{"question":"Which oscillator provides an extremely stable output frequency?","options":["Hartley oscillator","Wien bridge oscillator","Crystal oscillator","RC phase-shift oscillator"],"answerIndex":2,"exam":"ISRO 2007/2016/2018/2019 • DFCCIL 2018 • Telecom PYQs"},{"question":"Negative-resistance characteristics are exhibited by a:","options":["Zener diode","Schottky diode","Photodiode","Tunnel diode"],"answerIndex":3,"exam":"ISRO URSC 2022 • KVS 2018 • UPRVUNL 2016 • DRDO 2008"},{"question":"Which diode is commonly used as a voltage regulator?","options":["PIN diode","Varactor diode","Zener diode","Tunnel diode"],"answerIndex":2,"exam":"RRB JE 2019 • DFCCIL 2018"},{"question":"Positive feedback is normally used in:","options":["Oscillators","Rectifiers","Low-gain DC amplifiers","Passive filters"],"answerIndex":0,"exam":"ISRO URSC TA (EC) — 03.11.2022 • Telecom PYQs"},{"question":"The approximate current gain of a Darlington pair, when both transistor gains are β, is:","options":["β²","2β","β/2","1/β"],"answerIndex":0,"exam":"KVS JE Electrical & Electronics 2016"}],"count":10},{"sheet":"03 Digital Electronics","chapter":"Digital Electronics","questions":[{"question":"The EX-OR gate is also known as:","options":["Inequality circuit","One-bit comparator","Odd-parity detector","All of the above"],"answerIndex":3,"exam":"Repeated Digital Electronics PYQ"},{"question":"A clocked SR flip-flop can be converted into a D flip-flop using:","options":["Two inverters","One inverter","One AND gate","No additional gate"],"answerIndex":1,"exam":"ISRO Electronics — 2008"},{"question":"Which flip-flops have both buffer and toggle modes?","options":["D and JK","JK and T","T and D","SR only"],"answerIndex":1,"exam":"UPPCL Electronics & Telecom AE 2016"},{"question":"The BCD representation of decimal 15 is:","options":["0000 1111","1111","1000 0101","0001 0101"],"answerIndex":3,"exam":"UPPSC ITI Principal/Assistant Director 2022"},{"question":"The decimal equivalent of hexadecimal (3E8)₁₆ is:","options":["1000","982","768","323"],"answerIndex":0,"exam":"IES 1998"},{"question":"Which signed binary notation has a unique representation for zero?","options":["Sign-magnitude","1's complement","2's complement","9's complement"],"answerIndex":2,"exam":"IES 1993 • TNPSC AE 2019"},{"question":"Which of the following is an error-correcting code?","options":["EBCDIC","Gray code","Hamming code","ASCII"],"answerIndex":2,"exam":"APGENCO AE 2017 • IES 1992"},{"question":"A carry look-ahead adder is frequently used because it:","options":["Is faster","Is more accurate","Uses no gates","Always costs less"],"answerIndex":0,"exam":"Nagaland PSC 2018 • IES 1993"},{"question":"In a combinational circuit, the output depends on:","options":["Present input combination only","Present inputs and previous output","Previous inputs only","Clock history only"],"answerIndex":0,"exam":"Nagaland PSC 2018 • IES 1994"},{"question":"Without additional circuitry, an 8:1 multiplexer can implement:","options":["Some but not all three-variable functions","All three-variable functions only","All three-variable and some four-variable functions","All four-variable functions"],"answerIndex":2,"exam":"ISRO Scientist — May 2017"}],"count":10},{"sheet":"04 Linear IC","chapter":"Linear Integrated Circuit","questions":[{"question":"The input impedance of an ideal operational amplifier is:","options":["Zero","Infinite","1 Ω","Equal to output impedance"],"answerIndex":1,"exam":"RRB JE 2019 • RRB Secunderabad 2015 • RRB Allahabad 2006"},{"question":"The ideal op-amp characteristics are:","options":["Ri = ∞, A = ∞, Ro = 0","Ri = 0, A = ∞, Ro = 0","Ri = ∞, A = 0, Ro = ∞","Ri = 0, A = 0, Ro = 0"],"answerIndex":0,"exam":"Senior Assistant Electrical 2016 • BSNL/Telecom PYQs"},{"question":"A 741 op-amp has:","options":["8 pins","9 pins","7 pins","6 pins"],"answerIndex":0,"exam":"DFCCIL EE — 11.11.2018"},{"question":"The concept of virtual ground in an op-amp is based on:","options":["Infinite input impedance","Zero output impedance","Infinite open-loop gain","Infinite bandwidth"],"answerIndex":2,"exam":"NPCIL 2017"},{"question":"Three amplifier stages, each having a gain of 10, are cascaded. The net gain is:","options":["30","130","200","1000"],"answerIndex":3,"exam":"BSNL TTA — 29.09.2016"},{"question":"What is the function of pin 4 of the 555 timer IC?","options":["Output","Control voltage","Reset","Threshold voltage"],"answerIndex":2,"exam":"MPPGCL JE (Plant) — 29.04.2023"},{"question":"The time period of a monostable 555 multivibrator is:","options":["T = 3RC","T = RC","T = 1.1RC","T = 0.33RC"],"answerIndex":2,"exam":"RRB JE — 31.08.2019"},{"question":"Which circuit can be used to convert a sine wave into a square wave?","options":["Bistable multivibrator","Monostable multivibrator","Schmitt trigger","Integrator"],"answerIndex":2,"exam":"Calcutta Telephones — 2010"},{"question":"A Zener diode used as a voltage stabilizer normally operates in:","options":["Forward bias below knee voltage","Reverse breakdown region","Zero-bias region","Avalanche-free forward region"],"answerIndex":1,"exam":"Repeated Linear IC and Semiconductor PYQ"},{"question":"A good current buffer should have:","options":["Low input and low output impedance","Low input and high output impedance","High input and low output impedance","High input and high output impedance"],"answerIndex":1,"exam":"GATE 2014 • Punjab PSC Polytechnic Lecturer 2017"}],"count":10},{"sheet":"05 Microprocessor MCU","chapter":"Microprocessor and Microcontroller","questions":[{"question":"The data-bus width of the Intel 8085 microprocessor is:","options":["4-bit","8-bit","16-bit","32-bit"],"answerIndex":1,"exam":"UPRVUNL JE 2022 • Uttarakhand AE 2013"},{"question":"In the 8085 microprocessor, PSW stands for:","options":["Program Stored Word","Program Status Word","Program Stack Word","Program Set Word"],"answerIndex":1,"exam":"UPRVUNL JE — 14.05.2022"},{"question":"Which 8085 flag is used for signed arithmetic operations?","options":["Sign flag","Zero flag","Auxiliary carry flag","Parity flag"],"answerIndex":0,"exam":"UPMRC JE (S&T) — 03.01.2023"},{"question":"JMP and JZ in the Intel 8085 belong to which instruction group?","options":["Arithmetic","Branch","Logical","Stack"],"answerIndex":1,"exam":"PGCIL NER Diploma Trainee — 27.02.2022"},{"question":"The 8051 microcontroller has a:","options":["8-bit unidirectional address bus","16-bit unidirectional address bus","8-bit bidirectional address bus","16-bit bidirectional data bus"],"answerIndex":1,"exam":"NIT Jamshedpur TA (EC) — 22.04.2022"},{"question":"The standard 8051 microcontroller is a ______ pin device.","options":["16","32","40","51"],"answerIndex":2,"exam":"UPRVUNL JE — 14.05.2022"},{"question":"TMOD and PCON in the 8051 are:","options":["Control registers","Serial data registers","Accumulator registers","External memory registers"],"answerIndex":0,"exam":"UPRVUNL JE — 14.05.2022"},{"question":"The classic 8051 contains internal RAM and ROM of:","options":["1 KB and 64 bytes","128 bytes and 4 KB","4 KB and 128 bytes","64 bytes and 1 KB"],"answerIndex":1,"exam":"UPRVUNL JE — 14.05.2022"},{"question":"In 8085, MVI A, 23H uses which addressing mode?","options":["Direct","Register","Register indirect","Immediate"],"answerIndex":3,"exam":"UPMRC SCTO — 14.04.2021"},{"question":"The highest-priority and non-maskable interrupt of the 8085 is:","options":["RST 7.5","RST 6.5","INTR","TRAP"],"answerIndex":3,"exam":"UPPCL • BSNL • UPRVUNL • Telecom multiple PYQs"}],"count":10},{"sheet":"06 Measurements","chapter":"Electronic Measurements","questions":[{"question":"Precision of an instrument is best defined as:","options":["Repeatability","Reliability","Uncertainty","Accuracy"],"answerIndex":0,"exam":"UPPSC Polytechnic Lecturer 2022 • TNPSC AE 2014"},{"question":"Which of the following is a dynamic characteristic of a measurement system?","options":["Accuracy","Resolution","Speed of response","Sensitivity"],"answerIndex":2,"exam":"UPPSC Polytechnic Lecturer — 22.03.2022"},{"question":"A piezoelectric pick-up is a transducer of the:","options":["Variable-resistance type","Variable-inductance type","Voltage-generating type","Voltage-divider type"],"answerIndex":2,"exam":"LMRC SC/TO J.E. — 2016"},{"question":"Which strain-gauge transducer has the highest sensitivity and gauge factor?","options":["Semiconductor strain gauge","Nichrome-V strain gauge","Platinum-tungsten alloy strain gauge","Platinum strain gauge"],"answerIndex":0,"exam":"LMRC SC/TO — 2016"},{"question":"A 0–200 V voltmeter has an accuracy of 1% of full-scale reading and indicates 150 V. The percentage limiting error is:","options":["25.00%","12.50%","2.66%","1.33%"],"answerIndex":3,"exam":"ESE 2022"},{"question":"A 0.1 A ammeter of resistance 10 Ω is converted into a 1 A ammeter. The required shunt resistance is approximately:","options":["0.1 Ω","1.0 Ω","1.1 Ω","1.2 Ω"],"answerIndex":2,"exam":"BSNL JTO 2009"},{"question":"Kelvin double bridge is preferred for low-resistance measurement because it eliminates:","options":["Thermoelectric emf completely","Parasitic capacitance","Parasitic inductance","Lead and contact resistance effects"],"answerIndex":3,"exam":"IES 1996 • APGENCO AE 2017 • Mizoram PSC 2012"},{"question":"For AC bridges in the audio-frequency range, the commonly used detector is:","options":["AC voltmeter","CRO","Headphones","Vibration galvanometer"],"answerIndex":2,"exam":"IES 1997"},{"question":"Wheatstone bridge is normally used to measure:","options":["Medium resistance","Very low resistance","Very high frequency","Unknown inductance only"],"answerIndex":0,"exam":"Frequently repeated bridge-measurement PYQ"},{"question":"The instrument most suitable for observing very-high-frequency repetitive signals is:","options":["Moving-iron meter","Sampling oscilloscope","Electrodynamometer","Potentiometer"],"answerIndex":1,"exam":"BSNL JTO 2006"}],"count":10},{"sheet":"07 Communication Engg","chapter":"Communication Engineering","questions":[{"question":"A satellite transponder:","options":["Receives a signal from the earth station","Changes the received frequency","Retransmits the processed signal","Performs all of these functions"],"answerIndex":3,"exam":"ISRO URSC 2024 • ISRO ISTRAC 2019 • SSC IMD 2017"},{"question":"An amplitude-limiter circuit is normally present in a:","options":["AM receiver","FM receiver","PM receiver only","Crystal receiver"],"answerIndex":1,"exam":"ISRO URSC (TA) — 18.04.2024"},{"question":"Which modulation provides excellent noise-free reception of voice and music?","options":["AM","PM","FM","DSB-SC"],"answerIndex":2,"exam":"ISRO URSC (TA) — 18.04.2024"},{"question":"In an FM wave, the frequency-deviation constant is 75 kHz/V and the signal amplitude is 2 V. The maximum frequency deviation is:","options":["159 kHz","145 kHz","150 kHz","75 kHz"],"answerIndex":2,"exam":"ISRO URSC (TA) — 18.04.2024"},{"question":"For distortionless transmission in amplitude modulation, the modulation index should be:","options":["Greater than unity","Less than unity","Always equal to 2","Less than zero"],"answerIndex":1,"exam":"ISRO URSC (TA) — 18.04.2024"},{"question":"In a superheterodyne receiver, IF is 455 kHz and the receiver is tuned to 1200 kHz. The image frequency is:","options":["1655 kHz","745 kHz","2110 kHz","910 kHz"],"answerIndex":2,"exam":"ISRO SAC 2018 • ISRO SDSC 2017 • ISRO VSSC 2016"},{"question":"The bandwidth required for amplitude modulation is ______ the highest modulating frequency.","options":["Twice","Equal to","Half","One-third"],"answerIndex":0,"exam":"NMRC Electronics — 14.09.2019"},{"question":"Combining a low-frequency information signal with a high-frequency radio carrier is called:","options":["Modulation","Demodulation","Coding","Attenuation"],"answerIndex":0,"exam":"KVS TGT 2015 • RRB JE Bhopal 2015"},{"question":"The correct sequence of stages in an FM superheterodyne receiver is:","options":["RF amplifier → Mixer → IF amplifier → Limiter → Discriminator → Audio amplifier","Mixer → RF amplifier → Limiter → IF amplifier → Audio amplifier → Discriminator","RF amplifier → IF amplifier → Mixer → Discriminator → Limiter → Audio amplifier","Limiter → Mixer → RF amplifier → IF amplifier → Audio amplifier → Discriminator"],"answerIndex":0,"exam":"BIS 2020 • BSNL JE/TTA 2015"},{"question":"The approximate bandwidth of narrow-band FM (NBFM) is:","options":["2fm(β + 1)","fm","fm(β + 1)","2fm"],"answerIndex":3,"exam":"SSC IMD (SA) — 15.12.2022"}],"count":10},{"sheet":"08 Data Comm Network","chapter":"Data Communication and Network","questions":[{"question":"The data-transfer rate of a modem is measured in:","options":["Bytes per second","Baud rate only","Bits per second","Hertz"],"answerIndex":2,"exam":"BSNL TTA — 26.09.2016"},{"question":"Cache memory is inserted between:","options":["CPU and main memory","Secondary storage and main memory","Archival and secondary storage","Keyboard and CPU"],"answerIndex":0,"exam":"BSNL TTA — 26.09.2016"},{"question":"The lowest layer of the OSI model is the:","options":["Application layer","Session layer","Transport layer","Physical layer"],"answerIndex":3,"exam":"ISRO URSC TA (EC) — 03.11.2022"},{"question":"A network covering a small computer laboratory or office is a:","options":["MAN","WAN","LAN","WiMAX"],"answerIndex":2,"exam":"UPRVUNL JE — 14.05.2022"},{"question":"TCP stands for:","options":["Translated Controlling Protocol","Telex Control Protocol","Transmission Control Protocol","Telecommunication Processing Protocol"],"answerIndex":2,"exam":"UPRVUNL JE — 14.05.2022"},{"question":"In the TCP/IP model, Internet Protocol (IP) operates at the:","options":["Network/Internet layer","Transport layer","Application layer","Physical layer"],"answerIndex":0,"exam":"NPCIL KAIGA SA/B — 27.08.2022"},{"question":"The fifth layer of the seven-layer OSI model is:","options":["Physical","Network","Session","Application"],"answerIndex":2,"exam":"NPCIL KAIGA SA/ST — 28.08.2022"},{"question":"HTTP stands for:","options":["Hyper Terminal Tracing Program","Hypertext Transfer Protocol","Hypertext Tracing Protocol","High Transfer Text Process"],"answerIndex":1,"exam":"ISRO PC TA (EC) — 10.04.2022"},{"question":"A collection of point-to-point links forming a closed loop is called:","options":["MAN configuration","WAN topology","Ring topology","Bus topology"],"answerIndex":2,"exam":"UPRVUNL JE — 01.11.2021"},{"question":"Which device connects different networks?","options":["Hub","Switch","Router","Repeater"],"answerIndex":2,"exam":"BSNL TTA 2016/2015 • ISRO VSSC 2016"}],"count":10}];
+    const chapters = DEMO_CHAPTERS.map(({ sheet, chapter, count }) => ({ sheet, chapter, count }));
+    const questionsBySheet = Object.fromEntries(DEMO_CHAPTERS.map((item) => [item.sheet, item.questions]));
+
+    const loadingBox = document.getElementById("loadingBox");
+    const errorBox = document.getElementById("errorBox");
+    const quizArea = document.getElementById("quizArea");
+    const chapterList = document.getElementById("chapterList");
+    const questionCounter = document.getElementById("questionCounter");
+    const subjectLine = document.getElementById("subjectLine");
+    const examLine = document.getElementById("examLine");
+    const scoreLine = document.getElementById("scoreLine");
+    const questionText = document.getElementById("questionText");
+    const optionsBox = document.getElementById("optionsBox");
+    const answerFeedback = document.getElementById("answerFeedback");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const gotoInput = document.getElementById("gotoInput");
+    const gotoBtn = document.getElementById("gotoBtn");
+    const menuToggle = document.getElementById("menuToggle");
+    const sidebarClose = document.getElementById("sidebarClose");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const topbarTitle = document.getElementById("topbarTitle");
+
+    let currentSheet = chapters[0].sheet;
+    let currentQuestionIndex = 0;
+    const attempts = new Map();
+
+    function clean(value) {
+      return value == null ? "" : String(value).trim();
+    }
+
+    function currentChapter() {
+      return chapters.find((chapter) => chapter.sheet === currentSheet) || { chapter: currentSheet, count: 0 };
+    }
+
+    function currentQuestions() {
+      return questionsBySheet[currentSheet] || [];
+    }
+
+    function questionId(index) {
+      return currentSheet + "::" + index;
+    }
+
+    function chapterScore() {
+      let score = 0;
+      currentQuestions().forEach((_, index) => {
+        const result = attempts.get(questionId(index));
+        if (result && result.isCorrect) score += 1;
+      });
+      return score;
+    }
+
+    function escapeHtml(text) {
+      const element = document.createElement("div");
+      element.textContent = clean(text);
+      return element.innerHTML;
+    }
+
+    function renderSidebar() {
+      chapterList.innerHTML = "";
+      chapters.forEach((chapter, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chapter-btn" + (chapter.sheet === currentSheet ? " active" : "");
+        button.innerHTML = "<span>" + (index + 1) + ". " + escapeHtml(chapter.chapter || chapter.sheet) + "</span>" +
+          "<span class=\"chapter-count\">" + Number(chapter.count || 0) + " questions</span>";
+        button.addEventListener("click", () => selectChapter(chapter.sheet));
+        chapterList.appendChild(button);
+      });
+    }
+
+    function setAnswerFeedback(message = "", type = "") {
+      answerFeedback.textContent = message;
+      answerFeedback.className = "answer-feedback" + (type ? " " + type : "");
+      answerFeedback.classList.toggle("hidden", !message);
+    }
+
+    function applyAttemptResult(buttons, attempt, correctIndex) {
+      buttons.forEach((button) => {
+        button.disabled = true;
+        button.classList.remove("correct", "wrong", "unresolved");
+      });
+      buttons[correctIndex].classList.add("correct");
+      if (attempt.selectedIndex === correctIndex) {
+        setAnswerFeedback("Correct answer.", "correct");
+      } else {
+        buttons[attempt.selectedIndex].classList.add("wrong");
+        setAnswerFeedback("Incorrect answer. The correct option is highlighted in green.", "wrong");
+      }
+    }
+
+    function renderQuestion() {
+      const questions = currentQuestions();
+      const q = questions[currentQuestionIndex];
+      if (!q) {
+        loadingBox.classList.add("hidden");
+        quizArea.classList.add("hidden");
+        errorBox.textContent = "Question not found.";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+
+      const prior = attempts.get(questionId(currentQuestionIndex));
+      const correctIndex = Number(q.answerIndex);
+      const chapter = currentChapter();
+
+      questionCounter.textContent = "Question " + (currentQuestionIndex + 1) + "/" + questions.length;
+      subjectLine.textContent = "Subject: " + (chapter.chapter || currentSheet);
+      topbarTitle.textContent = chapter.chapter || currentSheet;
+      scoreLine.textContent = "Score: " + chapterScore();
+      questionText.textContent = q.question;
+      examLine.textContent = "Exam Name: " + (q.exam || "Not provided");
+      gotoInput.max = String(questions.length);
+      gotoInput.value = String(currentQuestionIndex + 1);
+
+      optionsBox.innerHTML = "";
+      setAnswerFeedback();
+      q.options.forEach((optionText, optionIndex) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "option";
+        button.textContent = optionText;
+        button.disabled = Boolean(prior);
+        button.addEventListener("click", () => selectOption(optionIndex));
+        optionsBox.appendChild(button);
+      });
+
+      if (prior) {
+        applyAttemptResult([...optionsBox.querySelectorAll(".option")], prior, correctIndex);
+      }
+
+      prevBtn.disabled = currentQuestionIndex === 0;
+      nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? "Finish" : "Next →";
+    }
+
+    function selectOption(selectedIndex) {
+      const id = questionId(currentQuestionIndex);
+      if (attempts.has(id)) return;
+      const question = currentQuestions()[currentQuestionIndex];
+      const correctIndex = Number(question.answerIndex);
+      const attempt = {
+        selectedIndex,
+        isCorrect: selectedIndex === correctIndex
+      };
+      attempts.set(id, attempt);
+      applyAttemptResult([...optionsBox.querySelectorAll(".option")], attempt, correctIndex);
+      scoreLine.textContent = "Score: " + chapterScore();
+    }
+
+    function selectChapter(sheetName) {
+      if (!questionsBySheet[sheetName]) return;
+      currentSheet = sheetName;
+      currentQuestionIndex = 0;
+      renderSidebar();
+      closeMobileSidebar();
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goToQuestion() {
+      const questions = currentQuestions();
+      const requested = Number(gotoInput.value);
+      if (!Number.isInteger(requested) || requested < 1 || requested > questions.length) {
+        alert("Enter a question number between 1 and " + questions.length + ".");
+        gotoInput.value = String(currentQuestionIndex + 1);
+        return;
+      }
+      currentQuestionIndex = requested - 1;
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function closeMobileSidebar() {
+      document.body.classList.remove("sidebar-open");
+    }
+
+    function toggleSidebar() {
+      if (window.innerWidth <= 1024) {
+        document.body.classList.toggle("sidebar-open");
+      } else {
+        document.body.classList.toggle("sidebar-collapsed");
+      }
+    }
+
+    function restartDemo() {
+      if (!confirm("Restart the complete demo and clear all selected answers?")) return;
+      attempts.clear();
+      currentSheet = chapters[0].sheet;
+      currentQuestionIndex = 0;
+      renderSidebar();
+      renderQuestion();
+      closeMobileSidebar();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    menuToggle.addEventListener("click", toggleSidebar);
+    sidebarClose.addEventListener("click", () => {
+      if (window.innerWidth <= 1024) closeMobileSidebar();
+      else document.body.classList.add("sidebar-collapsed");
+    });
+    sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+    logoutBtn.addEventListener("click", restartDemo);
+    gotoBtn.addEventListener("click", goToQuestion);
+    gotoInput.addEventListener("keydown", (event) => { if (event.key === "Enter") goToQuestion(); });
+    prevBtn.addEventListener("click", () => {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex -= 1;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+    nextBtn.addEventListener("click", () => {
+      const questions = currentQuestions();
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex += 1;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        alert("Chapter Complete!\nScore: " + chapterScore() + "/" + questions.length);
+      }
+    });
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 1024) document.body.classList.remove("sidebar-open");
+    });
+
+    (function init() {
+      renderSidebar();
+      loadingBox.classList.add("hidden");
+      errorBox.classList.add("hidden");
+      quizArea.classList.remove("hidden");
+      renderQuestion();
+    })();
+  </script>
+</body>
+</html>
