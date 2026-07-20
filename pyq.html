@@ -486,6 +486,7 @@
     let firebaseApp = null;
     let firebaseAuth = null;
     let pendingEmail = "";
+    let activeProgressEmail = "";
     let sessionToken = "";
     let chapters = [];
     let questionsBySheet = {};
@@ -574,6 +575,7 @@
 
     function progressEmail() {
       return normalizeEmail(
+        activeProgressEmail ||
         pendingEmail ||
         (firebaseAuth && firebaseAuth.currentUser && firebaseAuth.currentUser.email) ||
         storageGet(EMAIL_KEY)
@@ -797,6 +799,7 @@
       if (!sessionToken) throw new Error("The server could not create a login session.");
 
       pendingEmail = signedInEmail;
+      activeProgressEmail = signedInEmail;
       accessEmail.value = signedInEmail;
       paymentEmail.value = signedInEmail;
       storageSet(SESSION_KEY, sessionToken);
@@ -938,6 +941,13 @@
     }
 
     async function openQuizPortal() {
+      // Start with a clean in-memory quiz state. Saved local progress remains untouched.
+      // This prevents a logout → login in the same tab from overwriting saved attempts.
+      currentSheet = "";
+      currentQuestionIndex = 0;
+      questionsBySheet = {};
+      attempts.clear();
+
       accessGate.classList.add("hidden");
       quizApp.classList.remove("hidden");
       loadingBox.classList.remove("hidden");
@@ -978,7 +988,7 @@
     }
 
     async function selectChapter(sheetName) {
-      if (currentSheet) saveCurrentProgress();
+      if (currentSheet && currentSheet !== sheetName) saveCurrentProgress();
 
       currentSheet = sheetName;
       currentQuestionIndex = 0;
@@ -1292,6 +1302,9 @@
       storageRemove(EMAIL_KEY);
       sessionToken = "";
       pendingEmail = "";
+      activeProgressEmail = "";
+      currentSheet = "";
+      currentQuestionIndex = 0;
       questionsBySheet = {};
       chapters = [];
       attempts.clear();
@@ -1359,6 +1372,7 @@
         accessEmail.value = rememberedEmail;
         paymentEmail.value = rememberedEmail;
         pendingEmail = rememberedEmail;
+        activeProgressEmail = rememberedEmail;
       }
 
       try {
