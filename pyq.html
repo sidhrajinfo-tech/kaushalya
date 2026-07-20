@@ -447,6 +447,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzgjLvgyn9acwewbEfjMhtyTmD9HHtJ0wsfIfOwxb1FxvyzA_c3tffSzNvcLeZfKwYr/exec";
     const SESSION_KEY = "kaushalya_pyq_firebase_session";
     const EMAIL_KEY = "kaushalya_pyq_firebase_email";
+    const PROGRESS_KEY_PREFIX = "kaushalya_pyq_progress_v1:";
     const LETTERS = ["A", "B", "C", "D", "E"];
 
     const accessGate = document.getElementById("accessGate");
@@ -569,6 +570,133 @@
 
     function storageRemove(key) {
       try { localStorage.removeItem(key); } catch (_) {}
+    }
+
+    function progressEmail() {
+      return normalizeEmail(
+        pendingEmail ||
+        (firebaseAuth && firebaseAuth.currentUser && firebaseAuth.currentUser.email) ||
+        storageGet(EMAIL_KEY)
+      );
+    }
+
+    function progressStorageKey(email = progressEmail()) {
+      const normalized = normalizeEmail(email);
+      return normalized ? PROGRESS_KEY_PREFIX + normalized : "";
+    }
+
+    function readSavedProgress(email = progressEmail()) {
+      const key = progressStorageKey(email);
+      if (!key) return { version: 1, lastSheet: "", chapters: {} };
+
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || "{}");
+        return {
+          version: 1,
+          lastSheet: clean(parsed.lastSheet),
+          chapters: parsed.chapters && typeof parsed.chapters === "object"
+            ? parsed.chapters
+            : {}
+        };
+      } catch (_) {
+        return { version: 1, lastSheet: "", chapters: {} };
+      }
+    }
+
+    function writeSavedProgress(progress, email = progressEmail()) {
+      const key = progressStorageKey(email);
+      if (!key) return;
+
+      try {
+        localStorage.setItem(key, JSON.stringify(progress));
+      } catch (_) {}
+    }
+
+    function saveCurrentProgress() {
+      const email = progressEmail();
+      if (!email || !currentSheet) return;
+
+      const progress = readSavedProgress(email);
+      const chapterAttempts = {};
+      const prefix = currentSheet + "::";
+
+      attempts.forEach((attempt, id) => {
+        if (!id.startsWith(prefix)) return;
+
+        const index = Number(id.slice(prefix.length));
+        if (!Number.isInteger(index) || index < 0 || !attempt) return;
+
+        chapterAttempts[index] = {
+          selectedIndex: Number(attempt.selectedIndex)
+        };
+      });
+
+      progress.lastSheet = currentSheet;
+      progress.chapters[currentSheet] = {
+        currentQuestionIndex: Math.max(0, Number(currentQuestionIndex) || 0),
+        attempts: chapterAttempts,
+        updatedAt: new Date().toISOString()
+      };
+
+      writeSavedProgress(progress, email);
+    }
+
+    function restoreChapterProgress(sheetName) {
+      const questions = questionsBySheet[sheetName] || [];
+      const progress = readSavedProgress();
+      const chapterProgress = progress.chapters && progress.chapters[sheetName]
+        ? progress.chapters[sheetName]
+        : null;
+      const prefix = sheetName + "::";
+
+      [...attempts.keys()].forEach((id) => {
+        if (id.startsWith(prefix)) attempts.delete(id);
+      });
+
+      currentQuestionIndex = 0;
+      if (!chapterProgress || !questions.length) return;
+
+      const savedIndex = Number(chapterProgress.currentQuestionIndex);
+      if (Number.isInteger(savedIndex)) {
+        currentQuestionIndex = Math.min(
+          Math.max(savedIndex, 0),
+          questions.length - 1
+        );
+      }
+
+      const savedAttempts = chapterProgress.attempts &&
+        typeof chapterProgress.attempts === "object"
+        ? chapterProgress.attempts
+        : {};
+
+      Object.entries(savedAttempts).forEach(([indexText, savedAttempt]) => {
+        const index = Number(indexText);
+        const selectedIndex = Number(savedAttempt && savedAttempt.selectedIndex);
+        const question = questions[index];
+
+        if (
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index >= questions.length ||
+          !question ||
+          !Number.isInteger(selectedIndex) ||
+          selectedIndex < 0 ||
+          selectedIndex >= question.options.length
+        ) {
+          return;
+        }
+
+        const correctIndex = getCorrectIndex(question);
+        attempts.set(sheetName + "::" + index, {
+          selectedIndex,
+          isCorrect: correctIndex >= 0 && selectedIndex === correctIndex,
+          answerResolved: correctIndex >= 0
+        });
+      });
+    }
+
+    function lastSavedSheet() {
+      return clean(readSavedProgress().lastSheet);
     }
 
     function apiRequest(action, params = {}, timeoutMs = 25000) {
@@ -821,7 +949,13 @@
         chapters = Array.isArray(response.chapters) ? response.chapters : [];
         if (!chapters.length) throw new Error("No chapter sheets were found in the Index sheet.");
         renderSidebar();
-        await selectChapter(chapters[0].sheet);
+
+        const savedSheet = lastSavedSheet();
+        const openingSheet = chapters.some((chapter) => chapter.sheet === savedSheet)
+          ? savedSheet
+          : chapters[0].sheet;
+
+        await selectChapter(openingSheet);
       } catch (error) {
         storageRemove(SESSION_KEY);
         sessionToken = "";
@@ -844,6 +978,8 @@
     }
 
     async function selectChapter(sheetName) {
+      if (currentSheet) saveCurrentProgress();
+
       currentSheet = sheetName;
       currentQuestionIndex = 0;
       renderSidebar();
@@ -859,6 +995,8 @@
           questionsBySheet[sheetName] = rows.map(mapRow).filter((q) => q.question && q.options.length >= 2);
         }
         if (!questionsBySheet[sheetName].length) throw new Error("No valid questions were found in this chapter.");
+
+        restoreChapterProgress(sheetName);
         loadingBox.classList.add("hidden");
         quizArea.classList.remove("hidden");
         renderQuestion();
@@ -1111,6 +1249,7 @@
       };
 
       attempts.set(id, attempt);
+      saveCurrentProgress();
       applyAttemptResult([...optionsBox.querySelectorAll(".option")], attempt, correctIndex);
       scoreLine.textContent = "Score: " + chapterScore();
     }
@@ -1124,6 +1263,7 @@
         return;
       }
       currentQuestionIndex = requested - 1;
+      saveCurrentProgress();
       renderQuestion();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -1141,6 +1281,8 @@
     }
 
     async function logout() {
+      saveCurrentProgress();
+
       const tokenToInvalidate = sessionToken;
       if (tokenToInvalidate) {
         try { await apiRequest("logout", { token: tokenToInvalidate }, 10000); } catch (_) {}
@@ -1186,6 +1328,7 @@
     prevBtn.addEventListener("click", () => {
       if (currentQuestionIndex > 0) {
         currentQuestionIndex -= 1;
+        saveCurrentProgress();
         renderQuestion();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -1194,14 +1337,20 @@
       const questions = currentQuestions();
       if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex += 1;
+        saveCurrentProgress();
         renderQuestion();
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
+        saveCurrentProgress();
         alert("Chapter Complete!\nScore: " + chapterScore() + "/" + questions.length);
       }
     });
     window.addEventListener("resize", () => {
       if (window.innerWidth > 1024) document.body.classList.remove("sidebar-open");
+    });
+    window.addEventListener("beforeunload", saveCurrentProgress);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") saveCurrentProgress();
     });
 
     (async function init() {
