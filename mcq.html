@@ -1298,6 +1298,91 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
+
+function progressStorageKey() {
+  const email = String(state.userEmail || localStorage.getItem("kaushalya_logged_email") || "")
+    .trim()
+    .toLowerCase();
+  return email ? "kaushalya_quiz_progress_v1_" + email : "";
+}
+
+function saveQuizProgress() {
+  const key = progressStorageKey();
+  if (!key) return;
+
+  const progress = {
+    currentTopicKey: state.currentTopicKey || "",
+    currentIndexByTopic: {},
+    answered: state.answered || {},
+    scoreByTopic: state.scoreByTopic || {},
+    savedAt: new Date().toISOString()
+  };
+
+  if (state.currentTopicKey) {
+    progress.currentIndexByTopic[state.currentTopicKey] = state.currentIndex || 0;
+  }
+
+  try {
+    const old = JSON.parse(localStorage.getItem(key) || "{}");
+    progress.currentIndexByTopic = {
+      ...(old.currentIndexByTopic || {}),
+      ...progress.currentIndexByTopic
+    };
+    localStorage.setItem(key, JSON.stringify(progress));
+  } catch (err) {
+    console.warn("Quiz progress could not be saved:", err);
+  }
+}
+
+function loadQuizProgress() {
+  const key = progressStorageKey();
+  if (!key) return null;
+
+  try {
+    const progress = JSON.parse(localStorage.getItem(key) || "null");
+    if (!progress || typeof progress !== "object") return null;
+
+    state.answered = progress.answered && typeof progress.answered === "object"
+      ? progress.answered
+      : {};
+    state.scoreByTopic = progress.scoreByTopic && typeof progress.scoreByTopic === "object"
+      ? progress.scoreByTopic
+      : {};
+
+    return progress;
+  } catch (err) {
+    console.warn("Saved quiz progress could not be loaded:", err);
+    return null;
+  }
+}
+
+function sanitizeTopicProgress(topicKey, totalQuestions) {
+  const topicAnswers = state.answered[topicKey] || {};
+  const cleanAnswers = {};
+
+  Object.keys(topicAnswers).forEach(indexKey => {
+    const index = Number(indexKey);
+    const answer = topicAnswers[indexKey];
+    if (
+      Number.isInteger(index) &&
+      index >= 0 &&
+      index < totalQuestions &&
+      answer &&
+      Number.isInteger(Number(answer.selected))
+    ) {
+      cleanAnswers[index] = {
+        selected: Number(answer.selected),
+        correct: Boolean(answer.correct)
+      };
+    }
+  });
+
+  state.answered[topicKey] = cleanAnswers;
+  state.scoreByTopic[topicKey] = Object.values(cleanAnswers)
+    .filter(answer => answer.correct)
+    .length;
+}
+
 function showMsg(text, isError = true) {
   const msg = $("msg");
   msg.textContent = text || "";
@@ -1547,8 +1632,17 @@ async function loadTopics() {
     state.topics = data.topics || data.subjects || [];
     renderTopics();
 
+    const savedProgress = loadQuizProgress();
+
     if (state.topics.length > 0) {
-      await selectTopic(state.topics[0].key);
+      const savedTopicExists = savedProgress && state.topics.some(
+        topic => topic.key === savedProgress.currentTopicKey
+      );
+      const topicToOpen = savedTopicExists
+        ? savedProgress.currentTopicKey
+        : state.topics[0].key;
+
+      await selectTopic(topicToOpen, { restoreProgress: true, savedProgress });
     } else {
       $("question").textContent = "No subjects found. Check Questions sheet headers.";
     }
@@ -1574,8 +1668,12 @@ function renderTopics() {
   });
 }
 
-async function selectTopic(topicKey) {
+async function selectTopic(topicKey, options = {}) {
   try {
+    if (state.currentTopicKey && state.currentTopicKey !== topicKey) {
+      saveQuizProgress();
+    }
+
     state.currentTopicKey = topicKey;
     state.currentIndex = 0;
 
@@ -1609,7 +1707,19 @@ async function selectTopic(topicKey) {
     }
 
     state.currentQuestions = state.topicCache[topicKey];
+    sanitizeTopicProgress(topicKey, state.currentQuestions.length);
+
+    const savedProgress = options.savedProgress || loadQuizProgress();
+    const savedIndex = savedProgress && savedProgress.currentIndexByTopic
+      ? Number(savedProgress.currentIndexByTopic[topicKey])
+      : 0;
+
+    if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < state.currentQuestions.length) {
+      state.currentIndex = savedIndex;
+    }
+
     renderQuestion();
+    saveQuizProgress();
   } catch (err) {
     console.error(err);
     showMsg(err.message || "Could not load topic.");
@@ -1693,6 +1803,7 @@ function selectAnswer(selectedIndex) {
     state.scoreByTopic[state.currentTopicKey] = (state.scoreByTopic[state.currentTopicKey] || 0) + 1;
   }
 
+  saveQuizProgress();
   renderQuestion();
 }
 
@@ -1704,6 +1815,7 @@ function showExplanation(q) {
 function nextQuestion() {
   if (state.currentIndex < state.currentQuestions.length - 1) {
     state.currentIndex++;
+    saveQuizProgress();
     renderQuestion();
   } else {
     showMsg(`Subject completed. Score: ${state.scoreByTopic[state.currentTopicKey] || 0}/${state.currentQuestions.length}`, false);
@@ -1713,6 +1825,7 @@ function nextQuestion() {
 function prevQuestion() {
   if (state.currentIndex > 0) {
     state.currentIndex--;
+    saveQuizProgress();
     renderQuestion();
   }
 }
@@ -1728,6 +1841,7 @@ function jumpToQuestion() {
 
   state.currentIndex = n - 1;
   $("jump-input").value = "";
+  saveQuizProgress();
   renderQuestion();
 }
 
@@ -1737,6 +1851,7 @@ function toggleMenu() {
 }
 
 async function logout() {
+  saveQuizProgress();
   try { await auth.signOut(); } catch (e) {}
   localStorage.removeItem("kaushalya_verified_email");
   localStorage.removeItem("kaushalya_logged_email");
@@ -1757,6 +1872,11 @@ $("next-btn").onclick = nextQuestion;
 $("prev-btn").onclick = prevQuestion;
 $("jumpBtn").onclick = jumpToQuestion;
 $("logoutLink").onclick = logout;
+
+window.addEventListener("beforeunload", saveQuizProgress);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") saveQuizProgress();
+});
 
 restoreLoginSession();
 </script>
