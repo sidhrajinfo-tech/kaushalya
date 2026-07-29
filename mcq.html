@@ -322,6 +322,25 @@
       font-weight: 800;
     }
 
+    .restart-quiz-btn {
+      border: 1px solid #fecaca;
+      background: #fff1f2;
+      color: #be123c;
+      padding: 9px 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: transform .18s, background .18s, border-color .18s;
+    }
+
+    .restart-quiz-btn:hover {
+      transform: translateY(-1px);
+      background: #ffe4e6;
+      border-color: #fda4af;
+    }
+
     .meta-row {
       display: flex;
       justify-content: space-between;
@@ -1094,6 +1113,7 @@ button, input { font: inherit; }
         <div class="quiz-card">
           <div class="quiz-head">
             <div id="q-counter">Question</div>
+            <button class="restart-quiz-btn" id="restartQuizBtn" type="button" title="Delete saved quiz progress and restart">↻ Restart Quiz</button>
             <div class="jump-container">
               <span>Go to:</span>
               <input type="number" id="jump-input" class="jump-input" placeholder="#">
@@ -1354,6 +1374,53 @@ function loadQuizProgress() {
     console.warn("Saved quiz progress could not be loaded:", err);
     return null;
   }
+}
+
+
+function clearAllSavedQuizProgress() {
+  const progressPrefix = "kaushalya_quiz_progress_v1_";
+
+  [localStorage, sessionStorage].forEach(storage => {
+    try {
+      for (let index = storage.length - 1; index >= 0; index--) {
+        const key = storage.key(index);
+        if (key && key.startsWith(progressPrefix)) {
+          storage.removeItem(key);
+        }
+      }
+    } catch (err) {
+      console.warn("Saved quiz progress could not be cleared:", err);
+    }
+  });
+}
+
+async function restartQuiz() {
+  const confirmed = window.confirm(
+    "⚠️ Warning! Restarting will permanently delete all saved quiz answers, scores and question progress from this browser. The quiz will start again from Question 1. Continue?"
+  );
+
+  if (!confirmed) return;
+
+  clearAllSavedQuizProgress();
+  state.answered = {};
+  state.scoreByTopic = {};
+  state.currentIndex = 0;
+
+  const firstTopicKey = state.topics.length > 0
+    ? state.topics[0].key
+    : state.currentTopicKey;
+
+  state.currentTopicKey = "";
+
+  if (firstTopicKey) {
+    await selectTopic(firstTopicKey, { savedProgress: null });
+  } else {
+    state.currentQuestions = [];
+    renderQuestion();
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  showMsg("Quiz restarted successfully. All saved progress was cleared.", false);
 }
 
 function sanitizeTopicProgress(topicKey, totalQuestions) {
@@ -1871,6 +1938,7 @@ $("overlay").onclick = toggleMenu;
 $("next-btn").onclick = nextQuestion;
 $("prev-btn").onclick = prevQuestion;
 $("jumpBtn").onclick = jumpToQuestion;
+$("restartQuizBtn").onclick = restartQuiz;
 $("logoutLink").onclick = logout;
 
 window.addEventListener("beforeunload", saveQuizProgress);
