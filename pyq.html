@@ -226,6 +226,23 @@
     .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .menu-btn { background: #eaf0f8; color: #142846; font-size: 22px; }
     .topbar-title { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .topbar-actions { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+    .restart-btn {
+      border: 1px solid #fed7aa;
+      background: #fff7ed;
+      color: #c2410c;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: .16s ease;
+    }
+    .restart-btn:hover:not(:disabled) {
+      background: #ffedd5;
+      border-color: #fdba74;
+      transform: translateY(-1px);
+    }
+    .restart-btn:disabled { opacity: .62; cursor: not-allowed; }
     .logout-btn { border: 0; background: #edf1f6; color: #42536c; padding: 10px 14px; border-radius: 12px; font-weight: 800; cursor: pointer; }
     .main { display: flex; justify-content: center; padding: 30px 24px 44px; }
     .card { width: min(100%, 820px); background: #fff; border-radius: 26px; padding: 31px; box-shadow: var(--shadow); }
@@ -295,7 +312,8 @@
       .verify-btn { width: 100%; }
       .topbar { height: 64px; padding: 0 13px; }
       .topbar-title { font-size: 15px; }
-      .logout-btn { padding: 9px 10px; font-size: 13px; }
+      .topbar-actions { gap: 6px; }
+      .restart-btn, .logout-btn { padding: 9px 9px; font-size: 12px; white-space: nowrap; }
       .card { padding: 20px 17px; border-radius: 21px; }
       .top-row { flex-direction: column; }
       .goto-box { width: 100%; justify-content: flex-end; }
@@ -374,7 +392,10 @@
           <button id="menuToggle" class="icon-btn menu-btn" type="button" aria-label="Open or hide sidebar">☰</button>
           <div id="topbarTitle" class="topbar-title">PYQ Practice Portal</div>
         </div>
-        <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
+        <div class="topbar-actions">
+          <button id="restartQuizBtn" class="restart-btn" type="button">↻ Restart Quiz</button>
+          <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
+        </div>
       </header>
 
       <main class="main">
@@ -480,6 +501,7 @@
     const menuToggle = document.getElementById("menuToggle");
     const sidebarClose = document.getElementById("sidebarClose");
     const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+    const restartQuizBtn = document.getElementById("restartQuizBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const topbarTitle = document.getElementById("topbarTitle");
 
@@ -1290,6 +1312,47 @@
       }
     }
 
+    async function restartQuiz() {
+      const confirmed = window.confirm(
+        "⚠️ WARNING!\n\n" +
+        "This will permanently delete all saved PYQ progress, selected answers, and scores from this browser. " +
+        "The quiz will restart from Chapter 1, Question 1.\n\n" +
+        "Your login will remain active.\n\n" +
+        "Do you want to continue?"
+      );
+
+      if (!confirmed) return;
+
+      const firstSheet = chapters.length ? clean(chapters[0].sheet) : "";
+      if (!firstSheet) {
+        alert("The quiz could not be restarted because no chapter is available.");
+        return;
+      }
+
+      restartQuizBtn.disabled = true;
+      restartQuizBtn.textContent = "Restarting...";
+
+      try {
+        const savedProgressKey = progressStorageKey();
+        if (savedProgressKey) storageRemove(savedProgressKey);
+
+        attempts.clear();
+        currentQuestionIndex = 0;
+
+        // Clear currentSheet first so selectChapter() cannot save the old progress again.
+        currentSheet = "";
+        await selectChapter(firstSheet);
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        alert("Quiz restarted successfully. All saved progress has been cleared.");
+      } catch (error) {
+        alert("The quiz could not be restarted. " + (error && error.message ? error.message : "Please try again."));
+      } finally {
+        restartQuizBtn.disabled = false;
+        restartQuizBtn.textContent = "↻ Restart Quiz";
+      }
+    }
+
     async function logout() {
       saveCurrentProgress();
 
@@ -1335,6 +1398,7 @@
       else document.body.classList.add("sidebar-collapsed");
     });
     sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+    restartQuizBtn.addEventListener("click", restartQuiz);
     logoutBtn.addEventListener("click", logout);
     gotoBtn.addEventListener("click", goToQuestion);
     gotoInput.addEventListener("keydown", (event) => { if (event.key === "Enter") goToQuestion(); });
