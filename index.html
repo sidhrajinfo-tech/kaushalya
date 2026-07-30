@@ -154,11 +154,13 @@ padding-bottom:80px;
 
 display:grid;
 
-grid-template-columns:repeat(2,1fr);
+grid-template-columns:repeat(3,minmax(0,1fr));
 
-gap:30px;
+gap:22px;
 
 margin-top:50px;
+
+align-items:start;
 
 }
 
@@ -168,9 +170,9 @@ background:white;
 
 color:#111827;
 
-border-radius:26px;
+border-radius:22px;
 
-padding:30px;
+padding:24px;
 
 box-shadow:0 20px 60px rgba(0,0,0,.25);
 
@@ -192,15 +194,15 @@ transform:translateY(-10px);
 
 position:absolute;
 
-top:18px;
+top:14px;
 
-right:18px;
+right:14px;
 
 background:#2563eb;
 
 color:white;
 
-padding:8px 16px;
+padding:7px 13px;
 
 border-radius:40px;
 
@@ -212,9 +214,9 @@ font-weight:700;
 
 .card h2{
 
-margin-top:25px;
+margin-top:24px;
 
-font-size:30px;
+font-size:24px;
 
 margin-bottom:15px;
 
@@ -224,7 +226,7 @@ color:#0f172a;
 
 .price{
 
-font-size:46px;
+font-size:38px;
 
 font-weight:800;
 
@@ -238,7 +240,7 @@ margin:20px 0;
 
 width:100%;
 
-padding:17px;
+padding:14px;
 
 border:none;
 
@@ -248,7 +250,7 @@ background:linear-gradient(90deg,#2563eb,#06b6d4);
 
 color:white;
 
-font-size:19px;
+font-size:16px;
 
 font-weight:700;
 
@@ -262,6 +264,24 @@ transition:.3s;
 
 transform:scale(1.03);
 
+}
+
+.buy a{
+color:inherit;
+text-decoration:none;
+display:block;
+width:100%;
+}
+
+.card p{
+font-size:15px !important;
+line-height:27px !important;
+}
+
+@media(max-width:1050px){
+.grid{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
 }
 
 @media(max-width:900px){
@@ -278,12 +298,15 @@ font-size:18px;
 
 }
 
-.grid{
-
-grid-template-columns:1fr;
-
 }
 
+@media(max-width:700px){
+.grid{
+grid-template-columns:1fr;
+}
+.card{
+padding:22px;
+}
 }
 
 
@@ -818,8 +841,6 @@ gap:10px;">
 
 </div>
 
-</div>
-
 <!-- ===========================
         CARD 3
 =========================== -->
@@ -889,7 +910,69 @@ gap:10px;">
 
 </div>
 
+<!-- ===========================
+        CARD 4
+=========================== -->
+
+<div class="card">
+
+<div class="badge" style="background:#16a34a;">
+🎁 FREE
+</div>
+
+<h2>💻 ICT Officer Paper 1 Mock Test</h2>
+
+<p style="color:#475569;font-size:17px;line-height:30px;">
+
+<strong>Free Full-Length Practice Mock Test</strong>
+
+<br><br>
+
+✅ Paper 1 Exam-Oriented Questions
+
+<br>
+
+✅ 100 Marks Mock Test
+
+<br>
+
+✅ 60-Minute Exam Timer
+
+<br>
+
+✅ Instant Score After Submission
+
+<br>
+
+✅ Correct & Incorrect Answer Review
+
+<br>
+
+✅ Leaderboard Rank
+
+<br>
+
+✅ Mobile Friendly Platform
+
+</p>
+
+<div class="price">
+FREE
+</div>
+
+<button class="buy">
+<!-- Replace the href below with your ICT Officer Paper 1 mock-test link -->
+ <a class="btn demo-btn" href="https://kaushalyaacademy.online/ictmocktest1" target="_blank">
+     🎯 FREE MOCK TEST
+    </a>
+
+</a>
+</button>
+
+</div>
+
 <!-- GRID END -->
+</div>
 
 
 
