@@ -575,6 +575,64 @@ box-shadow:0 20px 45px rgba(0,0,0,.35);
 .info-card{padding:22px;}
 }
 
+
+/************* CURRENT ADVERTISEMENTS SPOTLIGHT ************/
+.ad-nav-spotlight{
+flex-shrink:0;
+display:inline-flex;
+align-items:center;
+gap:8px;
+padding:10px 15px;
+border-radius:12px;
+text-decoration:none;
+color:#fff;
+font-size:13px;
+font-weight:800;
+letter-spacing:.15px;
+background:linear-gradient(90deg,#f97316,#ef4444,#ec4899);
+box-shadow:0 0 0 1px rgba(255,255,255,.18),0 8px 28px rgba(239,68,68,.42);
+position:relative;
+overflow:hidden;
+animation:advertisementGlow 1.8s ease-in-out infinite;
+}
+
+.ad-nav-spotlight::before{
+content:'';
+position:absolute;
+inset:0;
+background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.38) 45%,transparent 65%);
+transform:translateX(-130%);
+animation:advertisementShine 2.6s ease-in-out infinite;
+}
+
+.ad-nav-spotlight span{position:relative;z-index:1;}
+.ad-nav-spotlight:hover{transform:translateY(-2px);}
+.nav-links{margin-left:auto;}
+
+@keyframes advertisementGlow{
+0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.18),0 8px 22px rgba(239,68,68,.32);}
+50%{box-shadow:0 0 0 2px rgba(255,255,255,.22),0 10px 36px rgba(236,72,153,.60);}
+}
+
+@keyframes advertisementShine{
+0%,55%{transform:translateX(-130%);}
+100%{transform:translateX(130%);}
+}
+
+@media(max-width:900px){
+.nav-inner{gap:8px;}
+.nav-brand{font-size:16px;}
+.ad-nav-spotlight{padding:8px 10px;font-size:11px;border-radius:10px;}
+.ad-nav-spotlight .ad-long{display:none;}
+.nav-links{margin-left:0;}
+}
+
+@media(max-width:430px){
+.nav-brand{font-size:14px;}
+.ad-nav-spotlight{font-size:10px;padding:8px 9px;}
+.menu-toggle{width:40px;}
+}
+
 </style>
 
 </head>
@@ -585,6 +643,7 @@ box-shadow:0 20px 45px rgba(0,0,0,.35);
 <nav class="site-nav" aria-label="Main navigation">
 <div class="nav-inner">
 <a class="nav-brand" href="#home">Kaushalya <span>Academy</span></a>
+<a class="ad-nav-spotlight" href="advertisements.html" aria-label="View current advertisements"><span>📢</span><span><span class="ad-long">Current </span>Advertisements</span></a>
 <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
 <div class="nav-links" id="navLinks">
 <a class="active" href="#home">Home</a>
@@ -1165,6 +1224,7 @@ margin-bottom:25px;
 
 <div class="footer-links" aria-label="Footer navigation">
 <a href="#home">Home</a>
+<a href="advertisements.html">Current Advertisements</a>
 <a href="#courses">Courses</a>
 <a href="#about">About Us</a>
 <a href="#privacy">Privacy Policy</a>
