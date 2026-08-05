@@ -1303,14 +1303,19 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+const PAGE_SIZE = 25;
+
 const state = {
   verifiedEmail: "",
   userEmail: "",
   idToken: "",
   topics: [],
+  // Cache structure: topicCache[topicKey].pages[pageOffset] = 25 questions
   topicCache: {},
   currentTopicKey: "",
   currentQuestions: [],
+  currentPageOffset: 0,
+  currentTopicTotal: 0,
   currentIndex: 0,
   answered: {},
   scoreByTopic: {}
@@ -1404,6 +1409,10 @@ async function restartQuiz() {
   clearAllSavedQuizProgress();
   state.answered = {};
   state.scoreByTopic = {};
+  state.topicCache = {};
+  state.currentQuestions = [];
+  state.currentPageOffset = 0;
+  state.currentTopicTotal = 0;
   state.currentIndex = 0;
 
   const firstTopicKey = state.topics.length > 0
@@ -1413,9 +1422,8 @@ async function restartQuiz() {
   state.currentTopicKey = "";
 
   if (firstTopicKey) {
-    await selectTopic(firstTopicKey, { savedProgress: null });
+    await selectTopic(firstTopicKey, { savedProgress: null, forceStart: true });
   } else {
-    state.currentQuestions = [];
     renderQuestion();
   }
 
@@ -1705,13 +1713,15 @@ async function loadTopics() {
       const savedTopicExists = savedProgress && state.topics.some(
         topic => topic.key === savedProgress.currentTopicKey
       );
+
+      // Open the subject saved in this browser. If none is saved, open the first sheet.
       const topicToOpen = savedTopicExists
         ? savedProgress.currentTopicKey
         : state.topics[0].key;
 
-      await selectTopic(topicToOpen, { restoreProgress: true, savedProgress });
+      await selectTopic(topicToOpen, { savedProgress });
     } else {
-      $("question").textContent = "No subjects found. Check Questions sheet headers.";
+      $("question").textContent = "No subject sheets found. Keep Users plus one separate sheet for each subject.";
     }
   } catch (err) {
     console.error(err);
@@ -1735,6 +1745,99 @@ function renderTopics() {
   });
 }
 
+function pageOffsetForIndex(index) {
+  const cleanIndex = Math.max(0, Number(index) || 0);
+  return Math.floor(cleanIndex / PAGE_SIZE) * PAGE_SIZE;
+}
+
+function getTopicCache(topicKey) {
+  if (!state.topicCache[topicKey]) {
+    state.topicCache[topicKey] = {
+      pages: {},
+      total: 0
+    };
+  }
+  return state.topicCache[topicKey];
+}
+
+function currentQuestion() {
+  const localIndex = state.currentIndex - state.currentPageOffset;
+  return state.currentQuestions[localIndex];
+}
+
+async function fetchTopicPage(topicKey, pageOffset) {
+  const cache = getTopicCache(topicKey);
+  const cacheKey = String(pageOffset);
+
+  if (Array.isArray(cache.pages[cacheKey])) {
+    return {
+      questions: cache.pages[cacheKey],
+      total: cache.total,
+      offset: pageOffset
+    };
+  }
+
+  const data = await callApi({
+    action: "topicBatch",
+    topic: topicKey,
+    offset: pageOffset,
+    limit: PAGE_SIZE,
+    idToken: state.idToken,
+    email: state.userEmail
+  });
+
+  if (!data.success) {
+    throw new Error(data.error || "Could not load questions");
+  }
+
+  cache.pages[cacheKey] = data.questions || [];
+  cache.total = Number(data.total || 0);
+
+  return {
+    questions: cache.pages[cacheKey],
+    total: cache.total,
+    offset: Number(data.offset || pageOffset)
+  };
+}
+
+async function openQuestionAtIndex(targetIndex, loadingText) {
+  const total = Number(state.currentTopicTotal || 0);
+
+  if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= total) {
+    return false;
+  }
+
+  const requiredOffset = pageOffsetForIndex(targetIndex);
+  const pageChanged = requiredOffset !== state.currentPageOffset;
+  const cache = getTopicCache(state.currentTopicKey);
+  const pageIsCached = Array.isArray(cache.pages[String(requiredOffset)]);
+
+  try {
+    if (pageChanged && !pageIsCached) {
+      showLoader(loadingText || "Loading 25 questions...");
+    }
+
+    const page = await fetchTopicPage(state.currentTopicKey, requiredOffset);
+    state.currentQuestions = page.questions;
+    state.currentPageOffset = requiredOffset;
+    state.currentTopicTotal = page.total;
+    state.currentIndex = targetIndex;
+
+    sanitizeTopicProgress(state.currentTopicKey, state.currentTopicTotal);
+    renderQuestion();
+    saveQuizProgress();
+    return true;
+  } catch (err) {
+    console.error(err);
+    showMsg(err.message || "Could not load the next question batch.");
+    return false;
+  } finally {
+    if (pageChanged && !pageIsCached) {
+      hideLoader();
+    }
+  }
+}
+
 async function selectTopic(topicKey, options = {}) {
   try {
     if (state.currentTopicKey && state.currentTopicKey !== topicKey) {
@@ -1742,7 +1845,6 @@ async function selectTopic(topicKey, options = {}) {
     }
 
     state.currentTopicKey = topicKey;
-    state.currentIndex = 0;
 
     document.querySelectorAll(".topic-item").forEach(item => {
       item.classList.toggle("active", item.dataset.key === topicKey);
@@ -1753,37 +1855,39 @@ async function selectTopic(topicKey, options = {}) {
       $("overlay").classList.remove("active");
     }
 
-    if (!state.topicCache[topicKey]) {
-      const topic = state.topics.find(t => t.key === topicKey);
-      showLoader("Loading " + (topic ? topic.name : "questions") + "...");
+    const topic = state.topics.find(item => item.key === topicKey);
+    const knownTotal = topic ? Number(topic.count || 0) : 0;
+    const savedProgress = options.savedProgress === null
+      ? null
+      : (options.savedProgress || loadQuizProgress());
 
-      const data = await callApi({
-        action: "topicFull",
-        topic: topicKey,
-        idToken: state.idToken,
-        email: state.userEmail
-      });
-
-      if (!data.success) {
-        throw new Error(data.error || "Could not load questions");
+    let targetIndex = 0;
+    if (!options.forceStart && savedProgress && savedProgress.currentIndexByTopic) {
+      const savedIndex = Number(savedProgress.currentIndexByTopic[topicKey]);
+      if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < knownTotal) {
+        targetIndex = savedIndex;
       }
-
-      state.topicCache[topicKey] = data.questions || [];
-      state.scoreByTopic[topicKey] = state.scoreByTopic[topicKey] || 0;
-      state.answered[topicKey] = state.answered[topicKey] || {};
     }
 
-    state.currentQuestions = state.topicCache[topicKey];
-    sanitizeTopicProgress(topicKey, state.currentQuestions.length);
+    const requiredOffset = pageOffsetForIndex(targetIndex);
+    const cache = getTopicCache(topicKey);
+    const pageIsCached = Array.isArray(cache.pages[String(requiredOffset)]);
 
-    const savedProgress = options.savedProgress || loadQuizProgress();
-    const savedIndex = savedProgress && savedProgress.currentIndexByTopic
-      ? Number(savedProgress.currentIndexByTopic[topicKey])
+    if (!pageIsCached) {
+      showLoader("Loading " + (topic ? topic.name : "questions") + " (25 at a time)...");
+    }
+
+    const page = await fetchTopicPage(topicKey, requiredOffset);
+    state.currentQuestions = page.questions;
+    state.currentPageOffset = requiredOffset;
+    state.currentTopicTotal = page.total;
+    state.currentIndex = page.total > 0
+      ? Math.min(targetIndex, page.total - 1)
       : 0;
 
-    if (Number.isInteger(savedIndex) && savedIndex >= 0 && savedIndex < state.currentQuestions.length) {
-      state.currentIndex = savedIndex;
-    }
+    state.scoreByTopic[topicKey] = state.scoreByTopic[topicKey] || 0;
+    state.answered[topicKey] = state.answered[topicKey] || {};
+    sanitizeTopicProgress(topicKey, state.currentTopicTotal);
 
     renderQuestion();
     saveQuizProgress();
@@ -1796,8 +1900,8 @@ async function selectTopic(topicKey, options = {}) {
 }
 
 function renderQuestion() {
-  const questions = state.currentQuestions || [];
-  const q = questions[state.currentIndex];
+  const q = currentQuestion();
+  const total = Number(state.currentTopicTotal || 0);
 
   $("score").textContent = state.scoreByTopic[state.currentTopicKey] || 0;
 
@@ -1807,10 +1911,13 @@ function renderQuestion() {
     $("question").textContent = "No questions found for this subject.";
     $("options-container").innerHTML = "";
     $("explanation").style.display = "none";
+    $("prev-btn").disabled = true;
+    $("next-btn").disabled = true;
     return;
   }
 
-  $("q-counter").textContent = `Question ${state.currentIndex + 1}/${questions.length}`;
+  $("next-btn").disabled = false;
+  $("q-counter").textContent = `Question ${state.currentIndex + 1}/${total}`;
   $("topic-display").textContent = `Subject: ${q.subject_name || state.currentTopicKey}`;
   $("question").textContent = q.question_text || q.q || "";
   $("options-container").innerHTML = "";
@@ -1845,11 +1952,11 @@ function renderQuestion() {
   }
 
   $("prev-btn").disabled = state.currentIndex === 0;
-  $("next-btn").textContent = state.currentIndex === questions.length - 1 ? "Finish" : "Next →";
+  $("next-btn").textContent = state.currentIndex === total - 1 ? "Finish" : "Next →";
 }
 
 function selectAnswer(selectedIndex) {
-  const q = state.currentQuestions[state.currentIndex];
+  const q = currentQuestion();
   if (!q) return;
 
   state.answered[state.currentTopicKey] = state.answered[state.currentTopicKey] || {};
@@ -1867,7 +1974,8 @@ function selectAnswer(selectedIndex) {
   };
 
   if (isCorrect) {
-    state.scoreByTopic[state.currentTopicKey] = (state.scoreByTopic[state.currentTopicKey] || 0) + 1;
+    state.scoreByTopic[state.currentTopicKey] =
+      (state.scoreByTopic[state.currentTopicKey] || 0) + 1;
   }
 
   saveQuizProgress();
@@ -1879,37 +1987,46 @@ function showExplanation(q) {
   $("explanation").style.display = "block";
 }
 
-function nextQuestion() {
-  if (state.currentIndex < state.currentQuestions.length - 1) {
-    state.currentIndex++;
-    saveQuizProgress();
-    renderQuestion();
+async function nextQuestion() {
+  const total = Number(state.currentTopicTotal || 0);
+
+  if (state.currentIndex < total - 1) {
+    const nextIndex = state.currentIndex + 1;
+    const crossingBatch = pageOffsetForIndex(nextIndex) !== state.currentPageOffset;
+    await openQuestionAtIndex(
+      nextIndex,
+      crossingBatch ? "Loading next 25 questions..." : "Loading question..."
+    );
   } else {
-    showMsg(`Subject completed. Score: ${state.scoreByTopic[state.currentTopicKey] || 0}/${state.currentQuestions.length}`, false);
+    showMsg(
+      `Subject completed. Score: ${state.scoreByTopic[state.currentTopicKey] || 0}/${total}`,
+      false
+    );
   }
 }
 
-function prevQuestion() {
+async function prevQuestion() {
   if (state.currentIndex > 0) {
-    state.currentIndex--;
-    saveQuizProgress();
-    renderQuestion();
+    const previousIndex = state.currentIndex - 1;
+    const crossingBatch = pageOffsetForIndex(previousIndex) !== state.currentPageOffset;
+    await openQuestionAtIndex(
+      previousIndex,
+      crossingBatch ? "Loading previous 25 questions..." : "Loading question..."
+    );
   }
 }
 
-function jumpToQuestion() {
+async function jumpToQuestion() {
   const n = Number($("jump-input").value);
-  const total = state.currentQuestions.length;
+  const total = Number(state.currentTopicTotal || 0);
 
   if (!Number.isInteger(n) || n < 1 || n > total) {
     showMsg(`Enter a number between 1 and ${total}`);
     return;
   }
 
-  state.currentIndex = n - 1;
   $("jump-input").value = "";
-  saveQuizProgress();
-  renderQuestion();
+  await openQuestionAtIndex(n - 1, "Loading the required 25-question batch...");
 }
 
 function toggleMenu() {
